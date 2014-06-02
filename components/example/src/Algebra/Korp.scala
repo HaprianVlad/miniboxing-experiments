@@ -1,7 +1,10 @@
 package Algebra
 
-import spire.algebra.AdditiveGroup
+import spire.algebra.Ring
+import spire.algebra.AdditiveSemigroup
 import spire.algebra.MultiplicativeGroup
 import spire.math.Integral
+import spire.algebra.Trig
+import spire.algebra.Order
 
-trait Korp[A] extends Integral[A] with Iterable[A] with AdditiveGroup[A] with MultiplicativeGroup[A]
+trait Korp extends Numeric[Korp] with Order[Korp] with AdditiveSemigroup[Korp] with MultiplicativeGroup[Korp]
