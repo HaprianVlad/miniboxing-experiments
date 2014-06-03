@@ -4,9 +4,8 @@ import spire.implicits._
 import spire.math.Complex
 import Algebra.Korp
 
-class ComplexIntegral[Korp]{
+class ComplexIntegral[T<:Korp[T]]{
 
-  private type T = Korp
   private type complexMethod  = (T => T ,T, T) => T
   
   private def leftRect(f:T=>T, a:T, b:T)=f(a)
