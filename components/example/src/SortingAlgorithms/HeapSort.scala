@@ -8,7 +8,7 @@ import Algebra.Korp
 
 
 object HeapSort {
-  def sort[T<:Korp[T]](vals: ArraySeq[T]) {
+  def sort[T](vals: ArraySeq[T]) {
     var heap = new MaxHeap[T]
     heap.set(vals)
     for (i <- vals.length - 1 to 0 by -1) {
@@ -17,12 +17,14 @@ object HeapSort {
   }
 }
 
-class MaxHeap[T <:Korp[T]] {
+class MaxHeap[T: spire.algebra.Order] {
   var _vals: ArraySeq[T] = _
 
   def set(vals: ArraySeq[T]) {
     _vals = new ArraySeq[T](1)
-    _vals(0) = (T)0
+    _vals(0) = implicitly[Group[T]].zero
+
+    
     _vals ++= vals.clone
 
     // Shift down starting at the last internal node.
