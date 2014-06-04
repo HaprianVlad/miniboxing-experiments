@@ -52,6 +52,6 @@ object MiniboxingBuild extends Build {
     testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-v")
   )
 
-  lazy val _mboxing    = Project(id = "miniboxing",             base = file("."),                      settings = defaults) aggregate (example)
-  lazy val example     = Project(id = "miniboxing-example",     base = file("components/example"),     settings = defaults ++ scalaMeter ++ junitDeps)
+  lazy val _mboxing    = Project(id = "spire-mbox",             base = file("."),                      settings = defaults) aggregate (example)
+  lazy val example     = Project(id = "spire-mbox-example",     base = file("components/example"),     settings = defaults ++ scalaMeter ++ junitDeps)
 }
