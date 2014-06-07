@@ -1,6 +1,9 @@
+
 package Integrals
+
 import spire.math.Complex
 import Algebra.Korp
+
 
 object Test {
   def main(args: Array[String]): Unit = {
@@ -21,9 +24,8 @@ object Test {
     	  	  else if (x > y) 1
     	  	  else 0
     	  	
-      }
-      
-      val integral = new ComplexIntegral[Double]()
-      integral.computeAndPrint(complexFn, 2, 5,0, 100)
+      } 
+      val integralComplex = new ComplexIntegral[Double]()
+      integralComplex.computeAndPrint(complexFn, 2, 5, 4, 100)
   }
 }
