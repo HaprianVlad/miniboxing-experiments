@@ -13,10 +13,11 @@ object SortingTest {
 	def main(args: Array[String]): Unit = {
 			
 			val r = new Random()
-			val doubleArray = generateArray(10,ArraySeq[Double](10),r)
+			val doubleArray = generateArray(1000,ArraySeq[Double](1000),r)
 			val heapSortArray = doubleArray
 			val quickSortArray = doubleArray
 			val insertionSortArray = doubleArray
+			val mergeSortArray = doubleArray
 			implicit object myGroup extends Group[Double]{
 			  def id = 0
 			  def inverse(a:Double):Double = -a
@@ -40,8 +41,11 @@ object SortingTest {
 			println("Sorted array with InsertionSort")
 			time{InsertionSort.sort(insertionSortArray)(myOrder,myGroup)}
 			println("----------------------------------------")
+			println("Sorted array with MergeSort")
+			time{MergeSort.sort(mergeSortArray)(myOrder,myGroup)}
+			println("----------------------------------------")
 			println("Sorted array:")
-			println(insertionSortArray) 
+			println(mergeSortArray) 
 
 	}
 
@@ -49,7 +53,7 @@ object SortingTest {
 	private def generateArray(size:Int,array:ArraySeq[Double],r:Random):ArraySeq[Double]={
 			if(size == 0)
 				array
-			else generateArray(size-1,(r.nextDouble()*100) +: array,r)
+			else generateArray(size-1,(r.nextDouble()*size) +: array,r)
 	}
 
 	private def time[R](block: => R): R = {
