@@ -8,8 +8,9 @@ import spire.implicits._
 import spire.random.immutable.Generator
 import spire.algebra.Group
 import spire.algebra.Order
+import Helpers.TimeProfiler
 
-object SortingTest {
+object SortingDoubleTest {
 	def main(args: Array[String]): Unit = {
 			
 			val r = new Random()
@@ -18,6 +19,8 @@ object SortingTest {
 			val quickSortArray = doubleArray
 			val insertionSortArray = doubleArray
 			val mergeSortArray = doubleArray
+			val shellSortArray = doubleArray
+		
 			implicit object myGroup extends Group[Double]{
 			  def id = 0
 			  def inverse(a:Double):Double = -a
@@ -33,19 +36,22 @@ object SortingTest {
 			println(doubleArray)
 			println("----------------------------------------")
 			println("Sorted array with HeapSort")
-			time{HeapSort.sort(heapSortArray)(myOrder,myGroup)}
+			TimeProfiler.time{HeapSort.sort(heapSortArray)(myOrder,myGroup)}
 			println("----------------------------------------")
 			println("Sorted array with QuickSort")
-			time{QuickSort.sort(quickSortArray)(myOrder,myGroup)}
+			TimeProfiler.time{QuickSort.sort(quickSortArray)(myOrder,myGroup)}
 			println("----------------------------------------")
 			println("Sorted array with InsertionSort")
-			time{InsertionSort.sort(insertionSortArray)(myOrder,myGroup)}
+			TimeProfiler.time{InsertionSort.sort(insertionSortArray)(myOrder,myGroup)}
 			println("----------------------------------------")
 			println("Sorted array with MergeSort")
-			time{MergeSort.sort(mergeSortArray)(myOrder,myGroup)}
+			TimeProfiler.time{MergeSort.sort(mergeSortArray)(myOrder,myGroup)}
+			println("----------------------------------------")
+			println("Sorted array with ShellSort")
+			TimeProfiler.time{ShellSort.sort(shellSortArray)(myOrder,myGroup)}
 			println("----------------------------------------")
 			println("Sorted array:")
-			println(mergeSortArray) 
+			println(shellSortArray) 
 
 	}
 
@@ -55,13 +61,4 @@ object SortingTest {
 				array
 			else generateArray(size-1,(r.nextDouble()*size) +: array,r)
 	}
-
-	private def time[R](block: => R): R = {
-			val t0 = System.nanoTime()
-			val result = block    // call-by-name
-			val t1 = System.nanoTime()
-			println("Elapsed time: " + (t1 - t0) + "ns")
-			result
-	}
-
 }
