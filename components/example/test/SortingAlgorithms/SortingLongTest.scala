@@ -14,12 +14,12 @@ object SortingLongTest {
 	def main(args: Array[String]): Unit = {
 			
 			val r = new Random()
-			val LongArray = generateArray(1000,ArraySeq[Long](1000),r)
-			val heapSortArray = LongArray
-			val quickSortArray = LongArray
-			val insertionSortArray = LongArray
-			val mergeSortArray = LongArray
-			val shellSortArray = LongArray
+			val longArray = generateArray(1000,ArraySeq[Long](1000),r)
+			val heapSortArray = longArray
+			val quickSortArray = longArray
+			val insertionSortArray = longArray
+			val mergeSortArray = longArray
+			val shellSortArray = longArray
 		
 			implicit object myGroup extends Group[Long]{
 			  def id = 0
@@ -33,7 +33,7 @@ object SortingLongTest {
     	  	  else 0
 			}
 			println("Unsorted array:")
-			println(LongArray)
+			println(longArray)
 			println("----------------------------------------")
 			println("Sorted array with HeapSort")
 			TimeProfiler.time{HeapSort.sort(heapSortArray)(myOrder,myGroup)}
