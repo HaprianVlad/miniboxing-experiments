@@ -2,12 +2,12 @@ package SortingAlgorithms
 
 import scala.collection.mutable.ArraySeq
 import SortingAlgorithms._
-import java.util.Random
-import scala.language.postfixOps
 import spire.implicits._
-import spire.random.immutable.Generator
 import spire.algebra.Group
 import spire.algebra.Order
+import org.scalacheck._
+import Arbitrary._
+import Gen._
 
 import Helpers._
 
@@ -25,10 +25,10 @@ object SortingDoubleTest {
     	  	  else if (x > y) 1
     	  	  else 0
 			}
-			//val r = new Random()
-			val arrayGenerator = ArrayGenerator
-			//val doubleArray = generateArray(1000,ArraySeq[Double](1000),r)
-			val doubleArray = arrayGenerator.generateArray(1000,ArraySeq[Double](1000))
+			val range = 10000
+			val arrayGenerator = new ArrayGenerator
+			val generator = Gen.chooseNum(0, range)
+			val doubleArray :ArraySeq[Double]= arrayGenerator.generateArray(1000, ArraySeq[Double](1000), generator)
 			val heapSortArray = doubleArray
 			val quickSortArray = doubleArray
 			val insertionSortArray = doubleArray
