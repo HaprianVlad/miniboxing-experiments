@@ -52,6 +52,19 @@ object MiniboxingBuild extends Build {
     testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-v")
   )
 
+ val miniboxingSettings: Seq[Setting[_]] = Seq(
+  resolvers += Resolver.sonatypeRepo("snapshots"),
+  libraryDependencies += "org.scala-miniboxing.plugins" %% 
+                         "miniboxing-runtime" % "0.3-SNAPSHOT",
+  addCompilerPlugin("org.scala-miniboxing.plugins" %% 
+                    "miniboxing-plugin" % "0.3-SNAPSHOT"),
+  scalacOptions += "-optimize"
+ )
+
+    lazy val root: Project = Project("miniboxing-example", file("."), 
+                                   settings = Defaults.defaultSettings ++ 
+                                              miniboxingSettings)
+
   lazy val _mboxing = Project(id = "spire-mbox", base = file("."), settings = defaults) aggregate (example)
   lazy val example = Project(id = "spire-mbox-example", base = file("components/example"), settings = defaults ++ scalaMeter ++ junitDeps)
 }

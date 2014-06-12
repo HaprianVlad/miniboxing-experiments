@@ -4,8 +4,8 @@ import spire.math._
 import spire.implicits._
 
 
-class EuclidGCDMiniboxed[@miniboxed  T](implicit o: Order[T], g: EuclideanRing[T]) {
+object EuclidGCDMiniboxed{
   
-  def gcd(a: T, b: T): T =
+  def gcd[@miniboxed T](a: T, b: T)(implicit o: Order[T], g: EuclideanRing[T]) : T =
 	if (b == 0) a else gcd(b, a % b)
 }

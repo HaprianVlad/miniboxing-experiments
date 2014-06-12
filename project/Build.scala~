@@ -36,9 +36,9 @@ object MiniboxingBuild extends Build {
   )
 
   val scalaMeter = {
-    val sMeter  = Seq("com.github.axel22" %% "scalameter" % "0.4")
+    val sMeter = Seq("com.github.axel22" %% "scalameter" % "0.4")
     Seq(
-      libraryDependencies ++= sMeter, 
+      libraryDependencies ++= sMeter,
       testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework")
     )
   }
@@ -52,6 +52,6 @@ object MiniboxingBuild extends Build {
     testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-v")
   )
 
-  lazy val _mboxing    = Project(id = "spire-mbox",             base = file("."),                      settings = defaults) aggregate (example)
-  lazy val example     = Project(id = "spire-mbox-example",     base = file("components/example"),     settings = defaults ++ scalaMeter ++ junitDeps)
+  lazy val _mboxing = Project(id = "spire-mbox", base = file("."), settings = defaults) aggregate (example)
+  lazy val example = Project(id = "spire-mbox-example", base = file("components/example"), settings = defaults ++ scalaMeter ++ junitDeps)
 }

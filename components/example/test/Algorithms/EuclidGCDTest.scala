@@ -33,27 +33,27 @@ object EuclidGCDTest {
     	  	  else if (x > y) 1
     	  	  else 0
 			}
-			val gcdIntSpire = new EuclidGCD(myOrderInt,myRingInt)
-			val gcdLongSpire =new EuclidGCD(myOrderLong,myRingLong)
-			val gcdIntMiniboxed = new EuclidGCDMiniboxed[Int]()
-			val gcdLongMiniboxed= new EuclidGCDMiniboxed[Long]()
+			val a : Long = 8
+			val b : Long = 12 
+			val c : Int = 8
+			val d : Int = 12 
 			println("Spire specialized Int:")
-			TimeProfiler.time{gcdIntSpire.gcd(8, 12)}
+			TimeProfiler.time{EuclidGCD.gcd(c,d)(myOrderInt,myRingInt)}
 			println("---------------------------------")
 			println("Spire specialized Long:")
-			TimeProfiler.time{gcdLongSpire.gcd(8, 12)}
+			TimeProfiler.time{EuclidGCD.gcd(a,b)(myOrderLong,myRingLong)}
 			println("---------------------------------")
 			println("Spire miniboxed Int:")
-			TimeProfiler.time{gcdIntMiniboxed.gcd(8, 12)}
+			//TimeProfiler.time{EuclidGCDMiniboxed.gcd(c, d)}
 			println("---------------------------------")
 			println("Spire miniboxed long:")
-			TimeProfiler.time{gcdLongMiniboxed.gcd(8, 12)}
+			//TimeProfiler.time{EuclidGCDMiniboxed.gcd(a, b)}
 			println("---------------------------------")
 			println("Manually specialized Int:")
-			TimeProfiler.time{gcdInt(8, 12)}
+			TimeProfiler.time{gcdInt(c, d)}
 			println("---------------------------------")
 			println("Manually specialized Long:")
-			TimeProfiler.time{gcdLong(8, 12)}
+			TimeProfiler.time{gcdLong(a, b)}
 			println("---------------------------------")
 			
   	}
