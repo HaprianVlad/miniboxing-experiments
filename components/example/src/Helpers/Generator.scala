@@ -1,4 +1,4 @@
-package Helpers
+/*package Helpers
 
 /// Nice implementation of generators found on :
 //	https://github.com/jimmc/scoroutine/blob/master/src/main/scala/net/jimmc
@@ -44,4 +44,4 @@ class Generator[T] extends Iterator[T] {
         sched.run
         !buf.dequeueBlocker.isBlocked
     }
-}
+}*/

@@ -27,7 +27,7 @@ object SortingDoubleTest {
 			}
 			val range = 10000
 			val arrayGenerator = new ArrayGenerator
-			val generator = Gen.chooseNum(0, range)
+			val generator :Gen[Double] = Gen.chooseNum(0, range)
 			val doubleArray :ArraySeq[Double]= arrayGenerator.generateArray(1000, ArraySeq[Double](1000), generator)
 			val heapSortArray = doubleArray
 			val quickSortArray = doubleArray
