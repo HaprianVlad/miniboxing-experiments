@@ -1,8 +1,9 @@
-package Algorithms
+package AlgorithmsTest
 import spire.algebra._
 import spire.math._
 import spire.implicits._
 import Helpers.TimeProfiler
+import Algorithms.EuclidGCD
 
 
 
