@@ -31,13 +31,13 @@ object MiniboxingBuild extends Build {
     scalacOptions ++= Seq("-feature", "-deprecation", "-unchecked", "-Xlint"),
     scalacOptions ++= Seq("-optimize", "-Yinline-warnings"),
 
-    scalaVersion := "2.10.4",
+    scalaVersion := "2.11.1",
 
     libraryDependencies += "org.spire-math" %% "spire" % "0.7.4"
   )
 
   val scalaMeter = {
-    val sMeter = Seq("com.github.axel22" %% "scalameter" % "0.4")
+    val sMeter = Seq("com.github.axel22" %% "scalameter" % "0.5-M2")
     Seq(
       libraryDependencies ++= sMeter,
       testFrameworks += new TestFramework("org.scalameter.ScalaMeterFramework")
@@ -46,8 +46,8 @@ object MiniboxingBuild extends Build {
 
   val junitDeps: Seq[Setting[_]] = Seq(
     libraryDependencies ++= Seq(
-      "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
-      "com.novocode" % "junit-interface" % "0.10-M2" % "test"
+      "org.scalacheck" %% "scalacheck" % "1.11.4",
+      "com.novocode" % "junit-interface" % "0.10-M2"
     ),
     parallelExecution in Test := false,
     testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-v")
@@ -71,5 +71,5 @@ object MiniboxingBuild extends Build {
 
 
   lazy val _mboxing = Project(id = "spire-mbox", base = file("."), settings = defaults) aggregate (example)
-  lazy val example = Project(id = "spire-mbox-example", base = file("components/example"), settings = defaults ++ scalaMeter ++ junitDeps)
+  lazy val example = Project(id = "spire-mbox-example", base = file("components/example"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings)
 }
