@@ -33,7 +33,7 @@ object MiniboxingBuild extends Build {
     scalaVersion := "2.11.1",
 
     libraryDependencies ++=
-      Seq("org.spire-math" %% "spire" % "0.7.4", 
+      Seq(//"org.spire-math" %% "spire" % "0.7.4", 
 				 // comparisons
       "org.apfloat" % "apfloat" % "1.6.3",
       "org.jscience" % "jscience" % "4.3.1",
@@ -85,8 +85,12 @@ object MiniboxingBuild extends Build {
   )
 
 
+  lazy val spireSettings =  Seq[Setting[_]](
+    libraryDependencies += "org.spire-math" %% "spire" % "0.7.4"
+  )
+
   lazy val _mboxing = Project(id = "spire-mbox", base = file("."), settings = defaults) aggregate (example,benchmark)
-  lazy val example = Project(id = "spire-mbox-example", base = file("components/example"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings)
-  lazy val benchmark = Project(id = "benchmark", base = file("components/benchmark"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings)
+  lazy val example = Project(id = "spire-mbox-example", base = file("components/example"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings ++ spireSettings)
+  lazy val benchmark = Project(id = "benchmark", base = file("components/benchmark"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings ++ spireSettings)
 
 }
