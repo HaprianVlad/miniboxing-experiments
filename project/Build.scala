@@ -23,17 +23,30 @@ object MiniboxingBuild extends Build {
     //http://stackoverflow.com/questions/10472840/how-to-attach-sources-to-sbt-managed-dependencies-in-scala-ide#answer-11683728
     com.typesafe.sbteclipse.plugin.EclipsePlugin.EclipseKeys.withSource := true,
 
-    resolvers in ThisBuild ++= Seq(
-      Resolver.sonatypeRepo("releases"),
-      Resolver.sonatypeRepo("snapshots")
-    ),
+   
+    resolvers += Resolver.sonatypeRepo("snapshots"),
+    resolvers += Resolver.sonatypeRepo("releases"),
 
     scalacOptions ++= Seq("-feature", "-deprecation", "-unchecked", "-Xlint"),
     scalacOptions ++= Seq("-optimize", "-Yinline-warnings"),
 
     scalaVersion := "2.11.1",
 
-    libraryDependencies += "org.spire-math" %% "spire" % "0.7.4"
+    libraryDependencies ++=
+      Seq("org.spire-math" %% "spire" % "0.7.4", 
+				 // comparisons
+      "org.apfloat" % "apfloat" % "1.6.3",
+      "org.jscience" % "jscience" % "4.3.1",
+      "org.apache.commons" % "commons-math3" % "3.2",
+
+      // thyme
+      "ichi.bench" % "thyme" % "0.1.0" from "http://plastic-idolatry.com/jars/thyme-0.1.0.jar",
+
+      // caliper stuff
+      "com.google.guava" % "guava" % "r09",
+      "com.google.code.java-allocation-instrumenter" % "java-allocation-instrumenter" % "2.0",
+      "com.google.code.caliper" % "caliper" % "1.0-SNAPSHOT" from "http://plastic-idolatry.com/jars/caliper-1.0-SNAPSHOT.jar",
+      "com.google.code.gson" % "gson" % "1.7.1")
   )
 
   val scalaMeter = {
