@@ -1233,7 +1233,7 @@ trait ConvertableTo[@spec A] {
   def fromType[B: ConvertableFrom](b: B): A
 }
 
-private trait ConvertableToByte extends ConvertableTo[Byte] {
+ trait ConvertableToByte extends ConvertableTo[Byte] {
   def fromByte(a: Byte): Byte = a
   def fromShort(a: Short): Byte = a.toByte
   def fromInt(a: Int): Byte = a.toByte
@@ -1247,7 +1247,7 @@ private trait ConvertableToByte extends ConvertableTo[Byte] {
   def fromType[B: ConvertableFrom](b: B): Byte = ConvertableFrom[B].toByte(b)
 }
 
-private trait ConvertableToShort extends ConvertableTo[Short] {
+ trait ConvertableToShort extends ConvertableTo[Short] {
   def fromByte(a: Byte): Short = a.toShort
   def fromShort(a: Short): Short = a
   def fromInt(a: Int): Short = a.toShort
@@ -1261,7 +1261,7 @@ private trait ConvertableToShort extends ConvertableTo[Short] {
   def fromType[B: ConvertableFrom](b: B): Short = ConvertableFrom[B].toShort(b)
 }
 
-private trait ConvertableToInt extends ConvertableTo[Int] {
+ trait ConvertableToInt extends ConvertableTo[Int] {
   def fromByte(a: Byte): Int = a.toInt
   def fromShort(a: Short): Int = a.toInt
   def fromInt(a: Int): Int = a
@@ -1275,7 +1275,7 @@ private trait ConvertableToInt extends ConvertableTo[Int] {
   def fromType[B: ConvertableFrom](b: B): Int = ConvertableFrom[B].toInt(b)
 }
 
-private trait ConvertableToLong extends ConvertableTo[Long] {
+ trait ConvertableToLong extends ConvertableTo[Long] {
   def fromByte(a: Byte): Long = a.toLong
   def fromShort(a: Short): Long = a.toLong
   def fromInt(a: Int): Long = a.toLong
@@ -1289,7 +1289,7 @@ private trait ConvertableToLong extends ConvertableTo[Long] {
   def fromType[B: ConvertableFrom](b: B): Long = ConvertableFrom[B].toLong(b)
 }
 
-private trait ConvertableToFloat extends ConvertableTo[Float] {
+ trait ConvertableToFloat extends ConvertableTo[Float] {
   def fromByte(a: Byte): Float = a.toFloat
   def fromShort(a: Short): Float = a.toFloat
   def fromInt(a: Int): Float = a.toFloat
@@ -1303,7 +1303,7 @@ private trait ConvertableToFloat extends ConvertableTo[Float] {
   def fromType[B: ConvertableFrom](b: B): Float = ConvertableFrom[B].toFloat(b)
 }
 
-private trait ConvertableToDouble extends ConvertableTo[Double] {
+ trait ConvertableToDouble extends ConvertableTo[Double] {
   def fromByte(a: Byte): Double = a.toDouble
   def fromShort(a: Short): Double = a.toDouble
   def fromInt(a: Int): Double = a.toDouble
@@ -1317,7 +1317,7 @@ private trait ConvertableToDouble extends ConvertableTo[Double] {
   def fromType[B: ConvertableFrom](b: B): Double = ConvertableFrom[B].toDouble(b)
 }
 
-private trait ConvertableToBigInt extends ConvertableTo[BigInt] {
+ trait ConvertableToBigInt extends ConvertableTo[BigInt] {
   def fromByte(a: Byte): BigInt = BigInt(a)
   def fromShort(a: Short): BigInt = BigInt(a)
   def fromInt(a: Int): BigInt = BigInt(a)
@@ -1331,7 +1331,7 @@ private trait ConvertableToBigInt extends ConvertableTo[BigInt] {
   def fromType[B: ConvertableFrom](b: B): BigInt = ConvertableFrom[B].toBigInt(b)
 }
 
-private trait ConvertableToBigDecimal extends ConvertableTo[BigDecimal] {
+ trait ConvertableToBigDecimal extends ConvertableTo[BigDecimal] {
   def fromByte(a: Byte): BigDecimal = BigDecimal(a)
   def fromShort(a: Short): BigDecimal = BigDecimal(a)
   def fromInt(a: Int): BigDecimal = BigDecimal(a)
@@ -1345,7 +1345,7 @@ private trait ConvertableToBigDecimal extends ConvertableTo[BigDecimal] {
   def fromType[B: ConvertableFrom](b: B): BigDecimal = ConvertableFrom[B].toBigDecimal(b)
 }
 
-private trait ConvertableToRational extends ConvertableTo[Rational] {
+ trait ConvertableToRational extends ConvertableTo[Rational] {
   def fromByte(a: Byte): Rational = Rational(a)
   def fromShort(a: Short): Rational = Rational(a)
   def fromInt(a: Int): Rational = Rational(a)
@@ -1359,7 +1359,7 @@ private trait ConvertableToRational extends ConvertableTo[Rational] {
   def fromType[B: ConvertableFrom](b: B): Rational = ConvertableFrom[B].toRational(b)
 }
 
-private trait ConvertableToAlgebraic extends ConvertableTo[Algebraic] {
+ trait ConvertableToAlgebraic extends ConvertableTo[Algebraic] {
   def fromByte(a: Byte): Algebraic = Algebraic(a)
   def fromShort(a: Short): Algebraic = Algebraic(a)
   def fromInt(a: Int): Algebraic = Algebraic(a)
@@ -1373,23 +1373,8 @@ private trait ConvertableToAlgebraic extends ConvertableTo[Algebraic] {
   def fromType[B: ConvertableFrom](b: B): Algebraic = Algebraic(ConvertableFrom[B].toRational(b))
 }
 
-private trait ConvertableToComplex[A] extends ConvertableTo[Complex[A]] {
-  implicit def algebra: Integral[A]
 
-  def fromByte(a: Byte): Complex[A] = Complex(algebra.fromByte(a), algebra.zero)
-  def fromShort(a: Short): Complex[A] = Complex(algebra.fromShort(a), algebra.zero)
-  def fromInt(a: Int): Complex[A] = Complex(algebra.fromInt(a), algebra.zero)
-  def fromLong(a: Long): Complex[A] = Complex(algebra.fromLong(a), algebra.zero)
-  def fromFloat(a: Float): Complex[A] = Complex(algebra.fromFloat(a), algebra.zero)
-  def fromDouble(a: Double): Complex[A] = Complex(algebra.fromDouble(a), algebra.zero)
-  def fromBigInt(a: BigInt): Complex[A] = Complex(algebra.fromBigInt(a), algebra.zero)
-  def fromBigDecimal(a: BigDecimal): Complex[A] = Complex(algebra.fromBigDecimal(a), algebra.zero)
-  def fromRational(a: Rational): Complex[A] = Complex(algebra.fromRational(a), algebra.zero)
-
-  def fromType[B: ConvertableFrom](b: B): Complex[A] = Complex(algebra.fromType(b), algebra.zero)
-}
-
-private trait ConvertableToSafeLong extends ConvertableTo[SafeLong] {
+ trait ConvertableToSafeLong extends ConvertableTo[SafeLong] {
   def fromByte(a: Byte): SafeLong = SafeLong(a)
   def fromShort(a: Short): SafeLong = SafeLong(a)
   def fromInt(a: Int): SafeLong = SafeLong(a)
@@ -1403,7 +1388,7 @@ private trait ConvertableToSafeLong extends ConvertableTo[SafeLong] {
   def fromType[B: ConvertableFrom](b: B): SafeLong = SafeLong(ConvertableFrom[B].toBigInt(b))
 }
 
-private trait ConvertableToNumber extends ConvertableTo[Number] {
+trait ConvertableToNumber extends ConvertableTo[Number] {
   def fromByte(a: Byte): Number = Number(a)
   def fromShort(a: Short): Number = Number(a)
   def fromInt(a: Int): Number = Number(a)
@@ -1417,7 +1402,7 @@ private trait ConvertableToNumber extends ConvertableTo[Number] {
   def fromType[B: ConvertableFrom](b: B): Number = Number(ConvertableFrom[B].toDouble(b))
 }
 
-private trait ConvertableToNatural extends ConvertableTo[Natural] {
+ trait ConvertableToNatural extends ConvertableTo[Natural] {
   def fromByte(a: Byte): Natural = Natural(a)
   def fromShort(a: Short): Natural = Natural(a)
   def fromInt(a: Int): Natural = Natural(a)
@@ -1448,8 +1433,7 @@ object ConvertableTo {
   implicit final val ConvertableToNumber = new ConvertableToNumber {}
   implicit final val ConvertableToNatural = new ConvertableToNatural {}
 
-  implicit def convertableToComplex[A: Integral] =
-    new ConvertableToComplex[A] { val algebra = Integral[A] }
+ 
 }
 
 trait ConvertableFrom[@spec A] {
@@ -1468,7 +1452,7 @@ trait ConvertableFrom[@spec A] {
   def toString(a: A): String
 }
 
-private trait ConvertableFromByte extends ConvertableFrom[Byte] {
+ trait ConvertableFromByte extends ConvertableFrom[Byte] {
   def toByte(a: Byte): Byte = a
   def toShort(a: Byte): Short = a.toShort
   def toInt(a: Byte): Int = a.toInt
@@ -1484,7 +1468,7 @@ private trait ConvertableFromByte extends ConvertableFrom[Byte] {
   def toString(a: Byte): String = a.toString
 }
 
-private trait ConvertableFromShort extends ConvertableFrom[Short] {
+ trait ConvertableFromShort extends ConvertableFrom[Short] {
   def toByte(a: Short): Byte = a.toByte
   def toShort(a: Short): Short = a
   def toInt(a: Short): Int = a.toInt
@@ -1500,7 +1484,7 @@ private trait ConvertableFromShort extends ConvertableFrom[Short] {
   def toString(a: Short): String = a.toString
 }
 
-private trait ConvertableFromInt extends ConvertableFrom[Int] {
+ trait ConvertableFromInt extends ConvertableFrom[Int] {
   def toByte(a: Int): Byte = a.toByte
   def toShort(a: Int): Short = a.toShort
   def toInt(a: Int): Int = a
@@ -1516,7 +1500,7 @@ private trait ConvertableFromInt extends ConvertableFrom[Int] {
   def toString(a: Int): String = a.toString
 }
 
-private trait ConvertableFromLong extends ConvertableFrom[Long] {
+trait ConvertableFromLong extends ConvertableFrom[Long] {
   def toByte(a: Long): Byte = a.toByte
   def toShort(a: Long): Short = a.toShort
   def toInt(a: Long): Int = a.toInt
@@ -1532,7 +1516,7 @@ private trait ConvertableFromLong extends ConvertableFrom[Long] {
   def toString(a: Long): String = a.toString
 }
 
-private trait ConvertableFromFloat extends ConvertableFrom[Float] {
+trait ConvertableFromFloat extends ConvertableFrom[Float] {
   def toByte(a: Float): Byte = a.toByte
   def toShort(a: Float): Short = a.toShort
   def toInt(a: Float): Int = a.toInt
@@ -1548,7 +1532,7 @@ private trait ConvertableFromFloat extends ConvertableFrom[Float] {
   def toString(a: Float): String = a.toString
 }
 
-private trait ConvertableFromDouble extends ConvertableFrom[Double] {
+trait ConvertableFromDouble extends ConvertableFrom[Double] {
   def toByte(a: Double): Byte = a.toByte
   def toShort(a: Double): Short = a.toShort
   def toInt(a: Double): Int = a.toInt
@@ -1564,7 +1548,7 @@ private trait ConvertableFromDouble extends ConvertableFrom[Double] {
   def toString(a: Double): String = a.toString
 }
 
-private trait ConvertableFromBigInt extends ConvertableFrom[BigInt] {
+trait ConvertableFromBigInt extends ConvertableFrom[BigInt] {
   def toByte(a: BigInt): Byte = a.toByte
   def toShort(a: BigInt): Short = a.toShort
   def toInt(a: BigInt): Int = a.toInt
@@ -1580,7 +1564,7 @@ private trait ConvertableFromBigInt extends ConvertableFrom[BigInt] {
   def toString(a: BigInt): String = a.toString
 }
 
-private trait ConvertableFromBigDecimal extends ConvertableFrom[BigDecimal] {
+trait ConvertableFromBigDecimal extends ConvertableFrom[BigDecimal] {
   def toByte(a: BigDecimal): Byte = a.toByte
   def toShort(a: BigDecimal): Short = a.toShort
   def toInt(a: BigDecimal): Int = a.toInt
@@ -1596,7 +1580,7 @@ private trait ConvertableFromBigDecimal extends ConvertableFrom[BigDecimal] {
   def toString(a: BigDecimal): String = a.toString
 }
 
-private trait ConvertableFromRational extends ConvertableFrom[Rational] {
+trait ConvertableFromRational extends ConvertableFrom[Rational] {
   def toByte(a: Rational): Byte = a.toBigInt.toByte
   def toShort(a: Rational): Short = a.toBigInt.toShort
   def toInt(a: Rational): Int = a.toBigInt.toInt
@@ -1612,7 +1596,7 @@ private trait ConvertableFromRational extends ConvertableFrom[Rational] {
   def toString(a: Rational): String = a.toString
 }
 
-private trait ConvertableFromAlgebraic extends ConvertableFrom[Algebraic] {
+trait ConvertableFromAlgebraic extends ConvertableFrom[Algebraic] {
   def toByte(a: Algebraic): Byte = a.toInt.toByte
   def toShort(a: Algebraic): Short = a.toInt.toShort
   def toInt(a: Algebraic): Int = a.toInt
@@ -1629,7 +1613,7 @@ private trait ConvertableFromAlgebraic extends ConvertableFrom[Algebraic] {
   def toString(a: Algebraic): String = a.toString
 }
 
-private trait ConvertableFromComplex[A] extends ConvertableFrom[Complex[A]] {
+trait ConvertableFromComplex[A] extends ConvertableFrom[Complex[A]] {
   def algebra: Integral[A]
 
   def toByte(a: Complex[A]): Byte = algebra.toByte(a.real)
@@ -1647,7 +1631,7 @@ private trait ConvertableFromComplex[A] extends ConvertableFrom[Complex[A]] {
   def toString(a: Complex[A]): String = a.toString
 }
 
-private trait ConvertableFromSafeLong extends ConvertableFrom[SafeLong] {
+trait ConvertableFromSafeLong extends ConvertableFrom[SafeLong] {
   def toByte(a: SafeLong): Byte = a.toBigInt.toByte
   def toShort(a: SafeLong): Short = a.toBigInt.toShort
   def toInt(a: SafeLong): Int = a.toBigInt.toInt
@@ -1663,7 +1647,7 @@ private trait ConvertableFromSafeLong extends ConvertableFrom[SafeLong] {
   def toString(a: SafeLong): String = a.toString
 }
 
-private trait ConvertableFromNumber extends ConvertableFrom[Number] {
+trait ConvertableFromNumber extends ConvertableFrom[Number] {
   def toByte(a: Number): Byte = a.toBigInt.toByte
   def toShort(a: Number): Short = a.toBigInt.toShort
   def toInt(a: Number): Int = a.toBigInt.toInt
@@ -1679,7 +1663,7 @@ private trait ConvertableFromNumber extends ConvertableFrom[Number] {
   def toString(a: Number): String = a.toString
 }
 
-private trait ConvertableFromNatural extends ConvertableFrom[Natural] {
+trait ConvertableFromNatural extends ConvertableFrom[Natural] {
   def toByte(a: Natural): Byte = a.toBigInt.toByte
   def toShort(a: Natural): Short = a.toBigInt.toShort
   def toInt(a: Natural): Int = a.toBigInt.toInt
