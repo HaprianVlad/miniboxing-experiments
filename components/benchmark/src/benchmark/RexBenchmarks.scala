@@ -44,12 +44,7 @@ class RexBenchmarks extends MyBenchmark with BenchmarkData {
     	 else if (x > y) 1
     	 else 0
  }
-  implicit object myOrderInt extends Order[Int]{
-	def compare(x:Int,y:Int):Int = 
-    	 if(x<y) -1 
-    	 else if (x > y) 1
-    	 else 0
- }
+ 
 
   var fs: Array[Float] = null
   var ds: Array[Double] = null
