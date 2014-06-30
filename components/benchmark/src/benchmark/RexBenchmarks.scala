@@ -7,7 +7,9 @@ import scala.{specialized => spec}
 
 import scala.reflect.ClassTag
 // TODO: remove dependencies from spire.math
-import spire.math._
+//import spire.math._
+//Those classes don't have type parameters
+import spire.math.{Rational,Number,Natural,Algebraic,Complex,SafeLong,Integral}
 import spire.implicits._
 import scala.util.Random._
 import com.google.caliper.Param
@@ -21,6 +23,9 @@ import java.lang.Double.{ longBitsToDouble, doubleToLongBits }
 import java.lang.Float.{ intBitsToFloat, floatToIntBits }
 import scala.annotation.{ switch, tailrec }
 import java.math.MathContext
+import spire.macrosk.Ops
+import scala.{specialized => sp}
+import spire.math.ApproximationContext
 
 // Rex BENCHMARK
 
@@ -53,7 +58,7 @@ class RexBenchmarks extends MyBenchmark with BenchmarkData {
   def nearlyMaxF(a: Array[Float], k: Int, start: Int = 0, end: Int = -1): Float = {
     val i0 = if (start >= 0) start else a.length + start
     val i1 = if (end >= 0) end else a.length + end + 1
-    val ai = new Array[Float](max(k, 0) + 1)
+    val ai = new Array[Float](math.max(k, 0) + 1)
     var i = i0 + 1
     var j = 0
     ai(0) = a(i0)
@@ -75,7 +80,7 @@ class RexBenchmarks extends MyBenchmark with BenchmarkData {
   def nearlyMaxD(a: Array[Double], k: Int, start: Int = 0, end: Int = -1): Double = {
     val i0 = if (start >= 0) start else a.length + start
     val i1 = if (end >= 0) end else a.length + end + 1
-    val ai = new Array[Double](max(k, 0) + 1)
+    val ai = new Array[Double](math.max(k, 0) + 1)
     var i = i0 + 1
     var j = 0
     ai(0) = a(i0)
@@ -97,7 +102,7 @@ class RexBenchmarks extends MyBenchmark with BenchmarkData {
   def nearlyMaxG[@spec A: Numeric: ClassTag](a: Array[A], k: Int, start: Int = 0, end: Int = -1): A = {
     val i0 = if (start >= 0) start else a.length + start
     val i1 = if (end >= 0) end else a.length + end + 1
-    val ai = new Array[A](max(k, 0) + 1)
+    val ai = new Array[A](math.max(k, 0) + 1)
     var i = i0 + 1
     var j = 0
     ai(0) = a(i0)
@@ -153,7 +158,7 @@ object Numeric {
   //implicit def RationalIsNumeric(implicit ctx: ApproximationContext[Rational] = defaultApprox): Numeric[Rational] =
    //new RationalIsNumeric
 
-  implicit def complexIsNumeric[A: Fractional: Trig: IsReal] = new ComplexIsNumeric
+  //implicit def complexIsNumeric[A: Fractional: Trig: IsReal] = new ComplexIsNumeric
 
   @inline final def apply[A](implicit ev: Numeric[A]):Numeric[A] = ev
 }
@@ -2252,6 +2257,81 @@ object Eq {
   def by[@spec A, @spec B](f:A => B)(implicit e:Eq[B]): Eq[A] = new MappedEq(e)(f)
 }
 
+////////////////////////////////////////////////////////////////////////////////////
 
+//Integral
+/*
 
+trait Integral[@sp(Int,Long) A] extends EuclideanRing[A] with ConvertableFrom[A] with ConvertableTo[A] with IsReal[A]
 
+object Integral {
+  implicit final val IntIsIntegral = new IntIsIntegral
+  implicit final val LongIsIntegral = new LongIsIntegral
+  implicit final val BigIntIsIntegral = new BigIntIsIntegral
+  implicit final val SafeLongIsIntegral = new SafeLongIsIntegral
+
+  @inline final def apply[A](implicit ev: Integral[A]) = ev
+}
+
+class IntegralOps[A](lhs: A)(implicit ev: Integral[A]) {
+  def factor: prime.Factors = prime.factor(toSafeLong)
+  def isPrime: Boolean = prime.isPrime(toSafeLong)
+  def toSafeLong: SafeLong = SafeLong(ev.toBigInt(lhs))
+}
+
+@SerialVersionUID(0L)
+private class IntIsIntegral extends Integral[Int] with IntIsEuclideanRing
+with ConvertableFromInt with ConvertableToInt with IntIsReal with Serializable {
+  override def fromInt(n: Int): Int = n
+  override def toDouble(n: Int): Double = n.toDouble
+}
+
+@SerialVersionUID(0L)
+private class LongIsIntegral extends Integral[Long] with LongIsEuclideanRing
+with ConvertableFromLong with ConvertableToLong with LongIsReal with Serializable {
+  override def fromInt(n: Int): Long = n.toLong
+  override def toDouble(n: Long): Double = n.toDouble
+}
+
+@SerialVersionUID(0L)
+private class BigIntIsIntegral extends Integral[BigInt] with BigIntIsEuclideanRing
+with ConvertableFromBigInt with ConvertableToBigInt with BigIntIsReal with Serializable {
+  override def fromInt(n: Int): BigInt = BigInt(n)
+  override def toDouble(n: BigInt): Double = n.toDouble
+}
+
+@SerialVersionUID(0L)
+private class SafeLongIsIntegral extends Integral[SafeLong] with SafeLongIsEuclideanRing
+with ConvertableFromSafeLong with ConvertableToSafeLong with SafeLongIsReal with Serializable {
+  override def fromInt(n: Int): SafeLong = SafeLong(n)
+  override def toDouble(n: SafeLong): Double = n.toDouble
+}
+*/
+////////////////////////////////////////////////////////////////////////////////////////
+
+// Math 
+
+package object math {
+
+  /**
+   * min
+   */
+  final def min(x: Byte, y: Byte): Byte = Math.min(x, y).toByte
+  final def min(x: Short, y: Short): Short = Math.min(x, y).toShort
+  final def min(x: Int, y: Int): Int = Math.min(x, y)
+  final def min(x: Long, y: Long): Long = Math.min(x, y)
+  final def min(x: Float, y: Float): Float = Math.min(x, y)
+  final def min(x: Double, y: Double): Double = Math.min(x, y)
+  final def min[A](x: A, y: A)(implicit ev: Order[A]) = ev.min(x, y)
+
+  /**
+   * max
+   */
+  final def max(x: Byte, y: Byte): Byte = Math.max(x, y).toByte
+  final def max(x: Short, y: Short): Short = Math.max(x, y).toShort
+  final def max(x: Int, y: Int): Int = Math.max(x, y)
+  final def max(x: Long, y: Long): Long = Math.max(x, y)
+  final def max(x: Float, y: Float): Float = Math.max(x, y)
+  final def max(x: Double, y: Double): Double = Math.max(x, y)
+  final def max[A](x: A, y: A)(implicit ev: Order[A]) = ev.max(x, y)
+}
