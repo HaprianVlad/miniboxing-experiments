@@ -12,7 +12,7 @@ import spire.implicits._
 import scala.util.Random._
 import com.google.caliper.Param
 
-//imports used for Spire Double and Long implementations
+//imports used for Private Spire implementation
 
 
 import java.lang.Math
@@ -20,6 +20,7 @@ import java.lang.Long.{ numberOfTrailingZeros, numberOfLeadingZeros }
 import java.lang.Double.{ longBitsToDouble, doubleToLongBits }
 import java.lang.Float.{ intBitsToFloat, floatToIntBits }
 import scala.annotation.{ switch, tailrec }
+import java.math.MathContext
 
 // Rex BENCHMARK
 
@@ -2042,4 +2043,215 @@ trait MultiplicativeAbGroup[@spec(Byte, Short, Int, Long, Float, Double) A] exte
     def inverse(x: A): A = reciprocal(x)
   }
 }
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+//NRoot
+
+trait NRoot[@spec(Double,Float,Int,Long) A] {
+  def nroot(a: A, n: Int): A
+  def sqrt(a: A): A = nroot(a, 2)
+  def fpow(a:A, b:A): A
+}
+
+object NRoot {
+  @inline final def apply[@spec(Int,Long,Float,Double) A](implicit ev:NRoot[A]) = ev
+
+  private def intSearch(f: Int => Boolean): Int = {
+    val ceil = (0 until 32) find (i => !f(1 << i)) getOrElse 33
+    if (ceil == 0) {
+      0
+    } else {
+      (0 /: ((ceil - 1) to 0 by -1)) { (x, i) =>
+        val y = x | (1 << i)
+        if (f(y)) y else x
+      }
+    }
+  }
+
+  private def decDiv(x: BigInt, y: BigInt, r: Int): Stream[BigInt] = {
+    val expanded = x * r
+    val quot = expanded / y
+    val rem = expanded - (quot * y)
+
+    if (rem == 0) {
+      Stream.cons(quot, Stream.empty)
+    } else {
+      Stream.cons(quot, decDiv(rem, y, r))
+    }
+  }
+  private def digitize(x: BigInt, r: Int, prev: List[Int] = Nil): List[Int] =
+    if (x == 0) prev else digitize(x / r, r, (x % r).toInt :: prev)
+    
+  private def undigitize(digits: Seq[Int], r: Int): BigInt =
+    (BigInt(0) /: digits)(_ * r + _)
+
+  private val radix = 1000000000
+
+  def nroot(a: BigDecimal, k: Int, ctxt: MathContext): BigDecimal = if (k == 0) {
+    BigDecimal(1)
+  } else if (a.signum < 0) {
+    if (k % 2 == 0) {
+      throw new ArithmeticException("%d-root of negative number" format k)
+    } else {
+      -nroot(-a, k, ctxt)
+    }
+  } else {
+    val underlying = BigInt(a.bigDecimal.unscaledValue.toByteArray)
+    val scale = BigInt(10) pow a.scale
+    val intPart = digitize(underlying / scale, radix)
+    val fracPart = decDiv(underlying % scale, scale, radix) map (_.toInt)
+    val leader = if (intPart.size % k == 0) Stream.empty else {
+      Stream.fill(k - intPart.size % k)(0)
+    }
+    val digits = leader ++ intPart.toStream ++ fracPart ++ Stream.continually(0)
+    val radixPowK = BigInt(radix) pow k
+
+    val maxSize = (ctxt.getPrecision + 8) / 9 + 2
+
+    def findRoot(digits: Stream[Int], y: BigInt, r: BigInt, i: Int): (Int, BigInt) = {
+      val y_ = y * radix
+      val a = undigitize(digits take k, radix)
+     
+      val target = radixPowK * r + a + (y_ pow k)
+      val b = intSearch(b => ((y_ + b) pow k) <= target)
+
+      val ny = y_ + b
+
+      if (i == maxSize) {
+        (i, ny)
+      } else {
+        val nr = target - (ny pow k)
+        
+     
+        findRoot(digits drop k, ny, nr, i + 1)
+      }
+    }
+
+    val (size, unscaled) = findRoot(digits, 0, 0, 1)
+    val newscale = (size - (intPart.size + k - 1) / k) * 9
+    BigDecimal(unscaled, newscale, ctxt)
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+//IsReal
+
+/**
+ * A simple type class for numeric types that are a subset of the reals.
+ */
+trait IsReal[@spec A] extends Order[A] with Signed[A] {
+  def ceil(a: A): A
+  def floor(a: A): A
+  def round(a: A): A
+  def isWhole(a: A): Boolean
+  def toDouble(a: A): Double
+}
+
+trait IsIntegral[@spec(Byte,Short,Int,Long) A] extends IsReal[A] {
+  def ceil(a: A): A = a
+  def floor(a: A): A = a
+  def round(a: A): A = a
+  def isWhole(a: A): Boolean = true
+}
+
+object IsReal {
+  def apply[@spec A](implicit A: IsReal[A]): IsReal[A] = A
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+//Order
+trait Order[@spec A] extends Eq[A] {
+  self =>
+
+  def eqv(x: A, y: A): Boolean = compare(x, y) == 0
+  def gt(x: A, y: A): Boolean = compare(x, y) > 0
+  def lt(x: A, y: A): Boolean = compare(x, y) < 0
+  def gteqv(x: A, y: A): Boolean = compare(x, y) >= 0
+  def lteqv(x: A, y: A): Boolean = compare(x, y) <= 0
+
+  def min(x: A, y: A): A = if (lt(x, y)) x else y
+  def max(x: A, y: A): A = if (gt(x, y)) x else y
+  def compare(x: A, y: A): Int
+
+  override def on[@spec B](f: B => A): Order[B] = new MappedOrder(this)(f)
+
+  def reverse: Order[A] = new ReversedOrder(this)
+}
+
+private class MappedOrder[@spec A, @spec B](order: Order[B])(f: A => B) extends Order[A] {
+  def compare(x: A, y: A) = order.compare(f(x), f(y))
+}
+
+private class ReversedOrder[@spec A](order: Order[A]) extends Order[A] {
+  def compare(x: A, y: A) = order.compare(y, x)
+}
+
+object Order {
+  @inline final def apply[A](implicit o: Order[A]) = o
+
+  def by[@spec A, @spec B](f: A => B)(implicit o: Order[B]): Order[A] = o.on(f)
+
+  def from[@spec A](f: (A, A) => Int): Order[A] = new Order[A] {
+    def compare(x: A, y: A) = f(x, y)
+  }
+
+  implicit def ordering[A](implicit o: Order[A]) = new Ordering[A] {
+    def compare(x: A, y: A) = o.compare(x, y)
+  }
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+//Signed
+
+trait Signed[@spec(Double, Float, Int, Long) A] {
+  def sign(a: A): Sign = Sign(signum(a))  
+  
+  def signum(a: A): Int
+
+  def abs(a: A): A
+
+  def isZero(a: A): Boolean = signum(a) == 0
+}
+
+object Signed {
+  implicit def orderedRingIsSigned[A: Order: Ring]: Signed[A] = new OrderedRingIsSigned[A]
+
+  def apply[A](implicit s: Signed[A]): Signed[A] = s
+}
+
+private class OrderedRingIsSigned[A](implicit o: Order[A], r: Ring[A]) extends Signed[A] {
+  def signum(a: A) = o.compare(a, r.zero)
+  def abs(a: A) = if (signum(a) < 0) r.negate(a) else a
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+//Eq
+
+trait Eq[@spec A] {
+  def eqv(x:A, y:A): Boolean
+
+  def neqv(x:A, y:A): Boolean = !eqv(x, y)
+
+  def on[@spec B](f:B => A): Eq[B] = new MappedEq(this)(f)
+}
+
+private class MappedEq[@spec A, @spec B](eq: Eq[B])(f: A => B) extends Eq[A] {
+  def eqv(x: A, y: A): Boolean = eq.eqv(f(x), f(x))
+}
+
+object Eq {
+  def apply[A](implicit e:Eq[A]):Eq[A] = e
+
+  def by[@spec A, @spec B](f:A => B)(implicit e:Eq[B]): Eq[A] = new MappedEq(e)(f)
+}
+
+
+
 
