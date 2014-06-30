@@ -6,21 +6,18 @@ import scala.{specialized => spec}
 
 
 import scala.reflect.ClassTag
-// TODO: remove dependencies from spire.math
-//import spire.math._
 //Those classes don't have type parameters
+//TODO : take a look at complex,SafeLong and Integral
 import spire.math.{Rational,Number,Natural,Algebraic,Complex,SafeLong,Integral}
 import spire.implicits._
 import scala.util.Random._
 import com.google.caliper.Param
 
 //imports used for Private Spire implementation
-
-
 import java.lang.Math
 import java.lang.Long.{ numberOfTrailingZeros, numberOfLeadingZeros }
-import java.lang.Double.{ longBitsToDouble, doubleToLongBits }
 import java.lang.Float.{ intBitsToFloat, floatToIntBits }
+import java.lang.Double.{ isInfinite, isNaN, doubleToLongBits,longBitsToDouble }
 import scala.annotation.{ switch, tailrec }
 import java.math.MathContext
 import spire.macrosk.Ops
@@ -34,6 +31,25 @@ object RexBenchmarks extends MyRunner(classOf[RexBenchmarks])
 class RexBenchmarks extends MyBenchmark with BenchmarkData {
   @Param(Array("10", "12", "14", "16", "18"))
   var pow: Int = 0
+  
+  implicit object myOrderDouble extends Order[Double]{
+	def compare(x:Double,y:Double):Int = 
+    	  if(x<y) -1 
+      	  else if (x > y) 1
+      	  else 0
+  }
+  implicit object myOrderFloat extends Order[Float]{
+	def compare(x:Float,y:Float):Int = 
+    	 if(x<y) -1 
+    	 else if (x > y) 1
+    	 else 0
+ }
+  implicit object myOrderInt extends Order[Int]{
+	def compare(x:Int,y:Int):Int = 
+    	 if(x<y) -1 
+    	 else if (x > y) 1
+    	 else 0
+ }
 
   var fs: Array[Float] = null
   var ds: Array[Double] = null
@@ -99,8 +115,8 @@ class RexBenchmarks extends MyBenchmark with BenchmarkData {
     ai(k)
   }
 
-  def nearlyMaxG[@spec A: Numeric: ClassTag](a: Array[A], k: Int, start: Int = 0, end: Int = -1): A = {
-    val i0 = if (start >= 0) start else a.length + start
+  def nearlyMaxG[@spec A: Numeric: ClassTag](a: Array[A], k: Int, start: Int = 0, end: Int = -1)(implicit  o:Order[A]): A = {
+  /*  val i0 = if (start >= 0) start else a.length + start
     val i1 = if (end >= 0) end else a.length + end + 1
     val ai = new Array[A](math.max(k, 0) + 1)
     var i = i0 + 1
@@ -118,7 +134,8 @@ class RexBenchmarks extends MyBenchmark with BenchmarkData {
       }
       i += 1
     }
-    ai(k)
+    ai(k)*/
+    a(0)
   }
   
   
@@ -131,11 +148,6 @@ class RexBenchmarks extends MyBenchmark with BenchmarkData {
 //*****************************************************************//
 
 // 1. Numeric
-
-// TODO: remove dependencies from spire.std
-import spire.std._
-// TODO: remove dependencies from spire.algebra
-import spire.algebra._
 
 trait Numeric[@spec(Int,Long,Float,Double) A] extends Ring[A]
 with AdditiveAbGroup[A] with MultiplicativeAbGroup[A] with NRoot[A]
@@ -1708,7 +1720,7 @@ object ConvertableFrom {
 
 //////////////////////////////////////////////////////////////////////////////////////
 
-// Ring, Rig, Rng, and Semiring
+// Ring, Rig, Rng, Semiring and EuclideanRing
 
 
 //Ring
@@ -1757,6 +1769,26 @@ trait Semiring[@spec(Byte, Short, Int, Long, Float, Double) A] extends AdditiveM
 object Semiring {
   @inline final def apply[A](implicit r:Semiring[A]):Semiring[A] = r
 }
+
+// EuclideanRing
+
+
+trait EuclideanRing[@spec(Byte, Short, Int, Long, Float, Double) A] extends CRing[A] {
+  def quot(a: A, b: A): A
+  def mod(a: A, b: A): A
+  def quotmod(a: A, b: A): (A, A) = (quot(a, b), mod(a, b))
+
+  def gcd(a: A, b: A): A
+  def lcm(a: A, b: A): A = times(quot(a, gcd(a, b)), b)
+
+  @tailrec protected[this] final def euclid(a: A, b: A)(implicit eq: Eq[A]): A =
+    if (eq.eqv(b, zero)) a else euclid(b, mod(a, b))
+}
+
+object EuclideanRing {
+  @inline final def apply[A](implicit e: EuclideanRing[A]): EuclideanRing[A] = e
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -2234,6 +2266,45 @@ private class OrderedRingIsSigned[A](implicit o: Order[A], r: Ring[A]) extends S
   def signum(a: A) = o.compare(a, r.zero)
   def abs(a: A) = if (signum(a) < 0) r.negate(a) else a
 }
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+//Sign
+
+sealed abstract class Sign(val toInt: Int) {
+  import Sign._
+
+  def unary_-(): Sign = this match {
+    case Positive => Negative
+    case Negative => Positive
+    case Zero => Zero
+  }
+
+  def *(that: Sign): Sign = Sign(this.toInt * that.toInt)
+
+  def **(that: Int): Sign = Sign(spire.math.pow(this.toInt, that).toInt)
+}
+
+object Sign {
+  case object Zero extends Sign(0)
+  case object Positive extends Sign(1)
+  case object Negative extends Sign(-1)
+
+  implicit def sign2int(s: Sign): Int = s.toInt
+  implicit def apply(i: Int): Sign = 
+    if (i == 0) Zero else if (i > 0) Positive else Negative
+
+  implicit final val SignAlgebra = new SignAlgebra {}
+
+  trait SignAlgebra extends Group[Sign] with Signed[Sign] with Order[Sign] {
+    def id: Sign = Zero
+    def op(a: Sign, b: Sign): Sign = Sign(a.toInt * b.toInt)
+    def inverse(a: Sign): Sign = Sign(-a.toInt)
+    override def sign(a: Sign): Sign = a
+    def signum(a: Sign): Int = a.toInt
+    def abs(a: Sign): Sign = if (a == Negative) Positive else a
+    def compare(x: Sign, y: Sign): Int = x.toInt - y.toInt
+  }
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -2334,4 +2405,84 @@ package object math {
   final def max(x: Float, y: Float): Float = Math.max(x, y)
   final def max(x: Double, y: Double): Double = Math.max(x, y)
   final def max[A](x: A, y: A)(implicit ev: Order[A]) = ev.max(x, y)
+}
+
+////////////////////////////////////////////////////////////////////////////////////////
+
+//Field
+
+
+trait Field[@spec(Byte, Short, Int, Long, Float, Double) A] extends EuclideanRing[A] with MultiplicativeAbGroup[A] {
+
+  /**
+   * This is implemented in terms of basic Field ops. However, this is
+   * probably significantly less efficient than can be done with a specific
+   * type. So, it is recommended that this method is overriden.
+   *
+   * This is possible because a Double is a rational number.
+   */
+  def fromDouble(a: Double): A = if (a == 0.0) {
+    fromInt(0)
+  } else {
+    require(!isInfinite(a) && !isNaN(a),
+            "Double must be representable as a fraction.")
+
+    val bits = doubleToLongBits(a)
+    val m = bits & 0x000FFFFFFFFFFFFFL | 0x0010000000000000L
+    val zeros = numberOfTrailingZeros(m)
+    val value = m >>> zeros
+    val exp = ((bits >> 52) & 0x7FF).toInt - 1075 + zeros // 1023 + 52
+
+    val high = times(fromInt((value >>> 30).toInt), fromInt(1 << 30))
+    val low = fromInt((value & 0x3FFFFFFF).toInt)
+    val num = plus(high, low)
+    val unsigned = if (exp > 0) {
+      times(num, pow(fromInt(2), exp))
+    } else if (exp < 0) {
+      div(num, pow(fromInt(2), -exp))
+    } else {
+      num
+    }
+
+    if (a < 0) negate(unsigned) else unsigned
+  }
+}
+
+object Field {
+  @inline final def apply[A](implicit f: Field[A]): Field[A] = f
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+//Trig
+
+trait Trig[@spec(Float, Double) A] {
+  def e: A
+  def pi: A
+
+  def exp(a: A): A
+  def expm1(a: A): A
+  def log(a:A): A
+  def log1p(a: A): A
+
+  def sin(a: A): A
+  def cos(a: A): A
+  def tan(a: A): A
+
+  def asin(a: A): A
+  def acos(a: A): A
+  def atan(a: A): A
+  def atan2(y: A, x: A): A
+
+  def sinh(x: A): A
+  def cosh(x: A): A
+  def tanh(x: A): A
+
+  def toRadians(a: A): A
+  def toDegrees(a: A): A
+}
+
+object Trig {
+  @inline final def apply[A](implicit t: Trig[A]) = t
 }

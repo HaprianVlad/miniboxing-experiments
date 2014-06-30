@@ -1,6 +1,6 @@
 package benchmark
-
-
+//This benchmark will work only after RexBenchamrk will be finished
+/*
 import scala.{specialized => spec}
 import scala.annotation.tailrec
 import scala.reflect.ClassTag
@@ -79,3 +79,4 @@ class ArrayOrderBenchmarks extends MyBenchmark {
   def timeAddIndirect(reps: Int) = run(reps) { indirectAdd(a, b) }
   def timeAddDirect(reps: Int) = run(reps) { directAdd(a, b) }
 }
+*/
