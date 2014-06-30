@@ -19,7 +19,7 @@ import java.lang.Math
 import java.lang.Long.{ numberOfTrailingZeros, numberOfLeadingZeros }
 import java.lang.Double.{ longBitsToDouble, doubleToLongBits }
 import java.lang.Float.{ intBitsToFloat, floatToIntBits }
-import scala.annotation.tailrec
+import scala.annotation.{ switch, tailrec }
 
 // Rex BENCHMARK
 
@@ -983,6 +983,7 @@ trait DoubleIsField extends Field[Double] {
   def negate(a:Double): Double = -a
   def one: Double = 1.0
   def plus(a:Double, b:Double): Double = a + b
+ //TODO: take a look at this override and pow method in Rig
   override def pow(a:Double, b:Int): Double = Math.pow(a, b)
   override def times(a:Double, b:Double): Double = a * b
   def zero: Double = 0.0
@@ -1699,4 +1700,346 @@ object ConvertableFrom {
 
 }
 
+//////////////////////////////////////////////////////////////////////////////////////
+
+// Ring, Rig, Rng, and Semiring
+
+
+//Ring
+trait Ring[@spec(Byte, Short, Int, Long, Float, Double) A] extends Rig[A] with Rng[A] {
+  def fromInt(n: Int): A = additive.sumn(one, n)
+}
+
+object Ring {
+  @inline final def apply[A](implicit r: Ring[A]): Ring[A] = r
+}
+
+trait CRing[@spec(Byte, Short, Int, Long, Float, Double) A] extends Ring[A] with MultiplicativeCMonoid[A]
+
+object CRing {
+  @inline final def apply[A](implicit r: CRing[A]): CRing[A] = r
+}
+
+
+//Rig
+trait Rig[@spec(Byte, Short, Int, Long, Float, Double) A] extends Semiring[A] with AdditiveMonoid[A] with MultiplicativeMonoid[A] {
+  override def pow(a:A, n:Int):A =
+    if (n >= 0) multiplicative.sumn(a, n)
+    else throw new IllegalArgumentException(s"Illegal negative exponent $n to Monoid#pow")
+}
+
+object Rig {
+  @inline final def apply[A](implicit r:Rig[A]): Rig[A] = r
+}
+
+//Rng
+
+trait Rng[@spec(Byte, Short, Int, Long, Float, Double) A] extends Semiring[A] with AdditiveAbGroup[A]
+
+object Rng {
+  @inline final def apply[A](implicit r:Rng[A]):Rng[A] = r
+}
+
+//Semiring
+
+trait Semiring[@spec(Byte, Short, Int, Long, Float, Double) A] extends AdditiveMonoid[A] with MultiplicativeSemigroup[A] {
+  def pow(a:A, n:Int):A =
+    if (n > 0) multiplicative.sumn(a, n)
+    else throw new IllegalArgumentException(s"Illegal non-positive exponent $n to Semiring#pow")
+}
+
+object Semiring {
+  @inline final def apply[A](implicit r:Semiring[A]):Semiring[A] = r
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+
+// Aditive things, We need most of them
+
+
+object Additive {
+  def apply[A](s: Semigroup[A]): AdditiveSemigroup[A] = new AdditiveSemigroup[A] {
+    def plus(x: A, y: A): A = s.op(x, y)
+  }
+
+  def apply[A](s: CSemigroup[A]): AdditiveCSemigroup[A] = new AdditiveCSemigroup[A] {
+    def plus(x: A, y: A): A = s.op(x, y)
+  }
+
+  def apply[A](m: Monoid[A]): AdditiveMonoid[A] = new AdditiveMonoid[A] {
+    def plus(x: A, y: A): A = m.op(x, y)
+    def zero = m.id
+  }
+
+  def apply[A](m: CMonoid[A]): AdditiveCMonoid[A] = new AdditiveCMonoid[A] {
+    def plus(x: A, y: A): A = m.op(x, y)
+    def zero = m.id
+  }
+
+  def apply[A](g: Group[A]): AdditiveGroup[A] = new AdditiveGroup[A] {
+    def plus(x: A, y: A): A = g.op(x, y)
+    override def minus(x: A, y: A): A = g.op(x, g.inverse(y))
+    def zero: A = g.id
+    def negate(x: A): A = g.inverse(x)
+  }
+
+  def apply[A](g: AbGroup[A]): AdditiveAbGroup[A] = new AdditiveAbGroup[A] {
+    def plus(x: A, y: A): A = g.op(x, y)
+    override def minus(x: A, y: A): A = g.op(x, g.inverse(y))
+    def zero: A = g.id
+    def negate(x: A): A = g.inverse(x)
+  }
+}
+
+trait AdditiveSemigroup[@spec(Byte, Short, Int, Long, Float, Double) A] {
+  def additive: Semigroup[A] = new Semigroup[A] {
+    def op(x: A, y: A): A = plus(x, y)
+  }
+
+  def plus(x: A, y: A): A
+}
+
+trait AdditiveCSemigroup[@spec(Byte, Short, Int, Long, Float, Double) A] extends AdditiveSemigroup[A] {
+  override def additive: CSemigroup[A] = new CSemigroup[A] {
+    def op(x: A, y: A): A = plus(x, y)
+  }
+}
+
+trait AdditiveMonoid[@spec(Byte, Short, Int, Long, Float, Double) A] extends AdditiveSemigroup[A] {
+  override def additive: Monoid[A] = new Monoid[A] {
+    def id = zero
+    def op(x: A, y: A): A = plus(x, y)
+  }
+
+  def zero: A
+}
+
+trait AdditiveCMonoid[@spec(Byte, Short, Int, Long, Float, Double) A] extends AdditiveMonoid[A] with AdditiveCSemigroup[A] {
+  override def additive: CMonoid[A] = new CMonoid[A] {
+    def id = zero
+    def op(x: A, y: A): A = plus(x, y)
+  }
+}
+
+trait AdditiveGroup[@spec(Byte, Short, Int, Long, Float, Double) A] extends AdditiveMonoid[A] {
+  override def additive: Group[A] = new Group[A] {
+    def id = zero
+    def op(x: A, y: A): A = plus(x, y)
+    def inverse(x: A): A = negate(x)
+  }
+
+  def negate(x: A): A
+  def minus(x: A, y: A): A = plus(x, negate(y))
+}
+
+trait AdditiveAbGroup[@spec(Byte, Short, Int, Long, Float, Double) A] extends AdditiveGroup[A] with AdditiveCMonoid[A] {
+  override def additive: AbGroup[A] = new AbGroup[A] {
+    def id = zero
+    def op(x: A, y: A): A = plus(x, y)
+    def inverse(x: A): A = negate(x)
+  }
+}
+//////////////////////////////////////////////////////////////////////////////////////////
+
+//Semigroup
+
+
+trait Semigroup[@spec(Boolean, Byte, Short, Int, Long, Float, Double) A] {
+  def op(x: A, y: A): A
+
+ 
+  def sumn(a: A, n: Int): A =
+    if (n <= 0) throw new IllegalArgumentException("Repeated summation for semigroups must have reptitions > 0")
+    else if (n == 1) a
+    else sumnAboveOne(a, n)
+
+  protected def sumnAboveOne(a: A, n: Int): A = {
+    @tailrec def loop(b: A, k: Int, extra: A): A =
+      if (k == 1) {
+        op(b, extra)
+      } else {
+        val x = if ((k & 1) == 1) op(b, extra) else extra
+        loop(op(b, b), k >>> 1, x)
+      }
+    loop(a, n - 1, a)
+  }
+
+  
+  def sumOption(as: TraversableOnce[A]): Option[A] = as.reduceOption(op)
+}
+
+object Semigroup {
+  @inline final def apply[A](implicit s: Semigroup[A]) = s
+
+  
+  @inline final def additive[A](implicit A: AdditiveSemigroup[A]) =  A.additive
+
+ 
+  @inline final def multiplicative[A](implicit A: MultiplicativeSemigroup[A]) = A.multiplicative
+}
+
+trait CSemigroup[@spec(Boolean, Byte, Short, Int, Long, Float, Double) A]
+    extends Semigroup[A]
+
+object CSemigroup {
+  @inline final def apply[A](implicit ev: CSemigroup[A]): CSemigroup[A] = ev
+  @inline final def additive[A](implicit A: AdditiveCSemigroup[A]): CSemigroup[A] =  A.additive
+  @inline final def multiplicative[A](implicit A: MultiplicativeCSemigroup[A]): CSemigroup[A] = A.multiplicative
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+
+//Monoid
+
+trait Monoid[@spec(Boolean, Byte, Short, Int, Long, Float, Double) A]
+    extends Semigroup[A] {
+  def id: A
+  override def sumn(a: A, n: Int): A =
+    if (n < 0) throw new IllegalArgumentException("Repeated summation for monoids must have reptitions >= 0")
+    else if (n == 0) id
+    else if (n == 1) a
+    else sumnAboveOne(a, n)
+  def sum(as: TraversableOnce[A]): A = as.reduce(op)
+}
+
+object Monoid {
+  @inline final def apply[A](implicit m: Monoid[A]): Monoid[A] = m
+  @inline final def additive[A](implicit A: AdditiveMonoid[A]) = A.additive
+  @inline final def multiplicative[A](implicit A: MultiplicativeMonoid[A]) = A.multiplicative
+
+}
+
+trait CMonoid[@spec(Boolean, Byte, Short, Int, Long, Float, Double) A]
+    extends Monoid[A] with CSemigroup[A]
+
+object CMonoid {
+  @inline final def apply[A](implicit ev: CMonoid[A]): CMonoid[A] = ev
+  @inline final def additive[A](implicit A: AdditiveCMonoid[A]): CMonoid[A] =  A.additive
+  @inline final def multiplicative[A](implicit A: MultiplicativeCMonoid[A]): CMonoid[A] = A.multiplicative
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+
+//Group
+
+trait Group[@spec(Byte, Short, Int, Long, Float, Double) A]
+    extends Monoid[A] {
+
+  def inverse(a: A): A
+
+  def opInverse(a: A, b: A): A = op(a, inverse(b))
+  
+  override def sumn(a: A, n: Int): A =
+    if (n == Int.MinValue) op(sumn(inverse(a), Int.MaxValue), inverse(a))
+    else if (n < 0) sumn(inverse(a), -n)
+    else if (n == 0) id
+    else if (n == 1) a
+    else sumnAboveOne(a, n)
+}
+
+object Group {
+  @inline final def apply[A](implicit ev: Group[A]): Group[A] = ev
+  @inline final def additive[A](implicit A: AdditiveGroup[A]): Group[A] =  A.additive
+  @inline final def multiplicative[A](implicit A: MultiplicativeGroup[A]): Group[A] = A.multiplicative
+}
+
+
+trait AbGroup[@spec(Byte, Short, Int, Long, Float, Double) A]
+    extends Group[A] with CMonoid[A]
+
+object AbGroup {
+  @inline final def apply[A](implicit ev: AbGroup[A]): AbGroup[A] = ev
+  @inline final def additive[A](implicit A: AdditiveAbGroup[A]): AbGroup[A] =  A.additive
+  @inline final def multiplicative[A](implicit A: MultiplicativeAbGroup[A]): AbGroup[A] = A.multiplicative
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+// Multiplicative
+
+object Multiplicative {
+  def apply[A](s: Semigroup[A]): MultiplicativeSemigroup[A] = new MultiplicativeSemigroup[A] {
+    def times(x: A, y: A): A = s.op(x, y)
+  }
+
+  def apply[A](s: CSemigroup[A]): MultiplicativeCSemigroup[A] = new MultiplicativeCSemigroup[A] {
+    def times(x: A, y: A): A = s.op(x, y)
+  }
+
+  def apply[A](m: Monoid[A]): MultiplicativeMonoid[A] = new MultiplicativeMonoid[A] {
+    def times(x: A, y: A): A = m.op(x, y)
+    def one = m.id
+  }
+
+  def apply[A](m: CMonoid[A]): MultiplicativeCMonoid[A] = new MultiplicativeCMonoid[A] {
+    def times(x: A, y: A): A = m.op(x, y)
+    def one = m.id
+  }
+
+  def apply[A](g: Group[A]): MultiplicativeGroup[A] = new MultiplicativeGroup[A] {
+    def times(x: A, y: A): A = g.op(x, y)
+    def div(x: A, y: A): A = g.op(x, g.inverse(y))
+    def one: A = g.id
+    override def reciprocal(x: A): A = g.inverse(x)
+  }
+
+  def apply[A](g: AbGroup[A]): MultiplicativeAbGroup[A] = new MultiplicativeAbGroup[A] {
+    def times(x: A, y: A): A = g.op(x, y)
+    def div(x: A, y: A): A = g.op(x, g.inverse(y))
+    def one: A = g.id
+    override def reciprocal(x: A): A = g.inverse(x)
+  }
+}
+
+trait MultiplicativeSemigroup[@spec(Byte, Short, Int, Long, Float, Double) A] {
+  def multiplicative: Semigroup[A] = new Semigroup[A] {
+    def op(x: A, y: A): A = times(x, y)
+  }
+
+  def times(x: A, y: A): A
+}
+
+trait MultiplicativeCSemigroup[@spec(Byte, Short, Int, Long, Float, Double) A] extends MultiplicativeSemigroup[A] {
+  override def multiplicative: CSemigroup[A] = new CSemigroup[A] {
+    def op(x: A, y: A): A = times(x, y)
+  }
+}
+
+trait MultiplicativeMonoid[@spec(Byte, Short, Int, Long, Float, Double) A] extends MultiplicativeSemigroup[A] {
+  override def multiplicative: Monoid[A] = new Monoid[A] {
+    def id = one
+    def op(x: A, y: A): A = times(x, y)
+  }
+
+  def one: A
+}
+
+trait MultiplicativeCMonoid[@spec(Byte, Short, Int, Long, Float, Double) A] extends MultiplicativeMonoid[A] with MultiplicativeCSemigroup[A] {
+  override def multiplicative: CMonoid[A] = new CMonoid[A] {
+    def id = one
+    def op(x: A, y: A): A = times(x, y)
+  }
+}
+
+trait MultiplicativeGroup[@spec(Byte, Short, Int, Long, Float, Double) A] extends MultiplicativeMonoid[A] {
+  override def multiplicative: Group[A] = new Group[A] {
+    def id = one
+    def op(x: A, y: A): A = times(x, y)
+    def inverse(x: A): A = reciprocal(x)
+  }
+
+  def reciprocal(x: A): A = div(one, x)
+  def div(x: A, y: A): A
+}
+
+trait MultiplicativeAbGroup[@spec(Byte, Short, Int, Long, Float, Double) A] extends MultiplicativeGroup[A] with MultiplicativeCMonoid[A] {
+  override def multiplicative: AbGroup[A] = new AbGroup[A] {
+    def id = one
+    def op(x: A, y: A): A = times(x, y)
+    def inverse(x: A): A = reciprocal(x)
+  }
+}
 
