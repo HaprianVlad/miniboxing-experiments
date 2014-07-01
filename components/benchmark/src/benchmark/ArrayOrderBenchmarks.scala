@@ -36,7 +36,13 @@ class ArrayOrderBenchmarks extends MyBenchmark {
       	  else 0
   }
   
-  implicit object myRingInt extends Ring[Int]
+  implicit object myRingInt extends Ring[Int]{
+    def zero = 0
+    def one = 1
+    def negate(x:Int) = -x
+    def plus(x:Int,y:Int) = x+y
+    def times(x:Int,n:Int) = x*n
+  }
   
 
   override protected def setUp() {

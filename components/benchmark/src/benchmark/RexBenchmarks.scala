@@ -101,12 +101,8 @@ class RexBenchmarks extends MyBenchmark with BenchmarkData {
     val ai = new Array[A](math.max(k, 0) + 1)
     var i = i0 + 1
     var j = 0
-    val x = a(0)
-    
-    
     ai(0) = a(i0)
     while (i < i1) {
-      
       if (a(i) > ai(j)) {
         var h = j - 1
         if (j < k) { ai(j + 1) = ai(j); j += 1 }

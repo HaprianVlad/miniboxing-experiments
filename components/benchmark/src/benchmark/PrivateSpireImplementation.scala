@@ -74,7 +74,7 @@ trait DoubleIsField extends Field[Double] {
   def quot(a:Double, b:Double) = (a - (a % b)) / b
   def mod(a:Double, b:Double) = a % b
 
- /* final def gcd(a:Double, b:Double):Double = {
+ final def gcd(a:Double, b:Double):Double = {
     def value(bits: Long): Long = bits & 0x000FFFFFFFFFFFFFL | 0x0010000000000000L
 
     def exp(bits: Long): Int = ((bits >> 52) & 0x7FF).toInt
@@ -106,7 +106,7 @@ trait DoubleIsField extends Field[Double] {
       else gcd0(bVal, bExp, aVal, aExp)
     }
   }
-*/
+
   override def fromDouble(n: Double): Double = n
   def div(a:Double, b:Double) = a / b
 }
@@ -1502,11 +1502,12 @@ object Trig {
   @inline final def apply[A](implicit t: Trig[A]) = t
 }
 ///////////////////////////////////////////////////////////////////////////////////////
-
 // ArraySupport
 object ArraySupport {
+ 
   
   def plus[@spec(Int, Long, Float, Double) A: ClassTag: AdditiveMonoid](x: Array[A], y: Array[A]): Array[A] = {
+   
     val z = new Array[A](math.max(x.length, y.length))
     var i = 0
     while (i < x.length && i < y.length) { z(i) = x(i) + y(i); i += 1 }
@@ -1514,6 +1515,13 @@ object ArraySupport {
     while (i < y.length) { z(i) = y(i); i += 1 }
     z
   }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+
+//
+final class AdditiveSemigroupOps[A](lhs:A)(implicit ev:AdditiveSemigroup[A]) {
+  def +(rhs:A): A = macro Ops.binop[A, A]
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
