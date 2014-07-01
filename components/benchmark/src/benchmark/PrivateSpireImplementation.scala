@@ -1795,6 +1795,7 @@ object Trig {
   @inline final def apply[A](implicit t: Trig[A]) = t
 }
 ///////////////////////////////////////////////////////////////////////////////////////
+
 // ArraySupport
 object ArraySupport {
  
@@ -1812,17 +1813,9 @@ object ArraySupport {
 
 //////////////////////////////////////////////////////////////////////////////////////
 
-//
+//AdditiveSemigroupOps for infering + operation on generic values
 final class AdditiveSemigroupOps[A](lhs:A)(implicit ev:AdditiveSemigroup[A]) {
   def +(rhs:A): A = macro Ops.binop[A, A]
 }
 
-//////////////////////////////////////////////////////////////////////////////////////
-
-//OrderOps
-
-final class OrderOps[A](lhs: A)(implicit ev: Order[A]) {
-  def >(rhs: A): Boolean = macro Ops.binop[A, Boolean]
-
-}
 

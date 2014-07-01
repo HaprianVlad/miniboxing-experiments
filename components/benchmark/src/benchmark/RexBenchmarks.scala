@@ -3,11 +3,15 @@ package benchmark
 
 import scala.{specialized => spec}
 import scala.reflect.ClassTag
-
 import scala.util.Random._
 import com.google.caliper.Runner
 import com.google.caliper.SimpleBenchmark
 import com.google.caliper.Param
+
+
+import scala.language.experimental.macros
+import scala.language.implicitConversions
+import spire.macrosk.Ops
 
 // Rex BENCHMARK
 
@@ -96,6 +100,7 @@ class RexBenchmarks extends MyBenchmark with BenchmarkData {
   }
 
   def nearlyMaxG[@spec A : Numeric: ClassTag](a: Array[A], k: Int, start: Int = 0, end: Int = -1): A = {
+    
     val i0 = if (start >= 0) start else a.length + start
     val i1 = if (end >= 0) end else a.length + end + 1
     val ai = new Array[A](math.max(k, 0) + 1)
@@ -120,3 +125,26 @@ class RexBenchmarks extends MyBenchmark with BenchmarkData {
   
   
 }
+
+//////////////////////////////////////////////////////////////////////////////////////
+
+// Things we need for infering the right operator for generic types
+
+final class EqOps[A](lhs:A)(implicit ev:Eq[A]) {
+  def ===(rhs:A): Boolean = macro Ops.binop[A, Boolean]
+  def =!=(rhs:A): Boolean = macro Ops.binop[A, Boolean]
+}
+
+final class OrderOps[A](lhs: A)(implicit ev: Order[A]) {
+  def >(rhs: A): Boolean = macro Ops.binop[A, Boolean]
+
+}
+trait EqSyntax {
+  implicit def eqOps[A:Eq](a:A) = new EqOps(a)
+}
+
+trait OrderSyntax extends EqSyntax {
+  implicit def orderOps[A:Order](a:A) = new OrderOps(a)
+}
+
+
