@@ -28,14 +28,48 @@ with AdditiveAbGroup[A] with MultiplicativeAbGroup[A] with NRoot[A]
 with ConvertableFrom[A] with ConvertableTo[A] with IsReal[A] 
 
 object Numeric {
- 
+  
+  implicit final val IntIsNumeric: Numeric[Int] = new IntIsNumeric
+  implicit final val LongIsNumeric: Numeric[Long] = new LongIsNumeric
   implicit final val FloatIsNumeric: Numeric[Float] = new FloatIsNumeric
   implicit final val DoubleIsNumeric: Numeric[Double] = new DoubleIsNumeric
-  
-  //private val defaultApprox = ApproximationContext(Rational(1, 1000000000))
+  /*implicit final val BigIntIsNumeric: Numeric[BigInt] = new BigIntIsNumeric
+  implicit final val BigDecimalIsNumeric: Numeric[BigDecimal] = new BigDecimalIsNumeric
+  implicit final val AlgebraicIsNumeric: Numeric[Algebraic] = new AlgebraicIsNumeric
+  implicit final val RealIsNumeric: Numeric[Real] = new RealIsNumeric
 
+  private val defaultApprox = ApproximationContext(Rational(1, 1000000000))
+
+  implicit def RationalIsNumeric(implicit ctx: ApproximationContext[Rational] = defaultApprox): Numeric[Rational] =
+    new RationalIsNumeric
+
+  implicit def complexIsNumeric[A: Fractional: Trig: IsReal] = new ComplexIsNumeric
+*/
   @inline final def apply[A](implicit ev: Numeric[A]):Numeric[A] = ev
 }
+
+
+
+
+@SerialVersionUID(0L)
+private class IntIsNumeric extends Numeric[Int] with IntIsEuclideanRing with IntIsNRoot
+with ConvertableFromInt with ConvertableToInt with IntIsReal with Serializable {
+  override def fromInt(n: Int): Int = n
+  override def fromDouble(n: Double): Int = n.toInt
+  override def toDouble(n: Int): Double = n.toDouble
+  def div(a: Int, b: Int): Int = a / b
+}
+
+@SerialVersionUID(0L)
+private class LongIsNumeric extends Numeric[Long] with LongIsEuclideanRing with LongIsNRoot
+with ConvertableFromLong with ConvertableToLong with LongIsReal with Serializable {
+  override def fromInt(n: Int): Long = n
+  override def fromDouble(n: Double): Long = n.toLong
+  override def toDouble(n: Long): Double = n.toDouble
+  def div(a: Long, b: Long): Long = a / b
+}
+
+
 
 @SerialVersionUID(0L)
 private class FloatIsNumeric extends Numeric[Float] with FloatIsField
@@ -56,6 +90,265 @@ with DoubleIsReal with Serializable {
 }
 
 ///////////////////////////////////////////////////////////////////////////
+//BitString and BooleanAlgebra implementation
+
+trait BooleanAlgebra[@spec(Boolean, Byte, Short, Int, Long) A] { self =>
+  def one: A
+  def zero: A
+  def complement(a: A): A
+  def and(a: A, b: A): A
+  def or(a: A, b: A): A
+  def xor(a: A, b: A): A = or(and(a, complement(b)), and(complement(a), b))
+
+  def imp(a: A, b: A): A = or(complement(a), b)
+  def nand(a: A, b: A): A = complement(and(a, b))
+  def nor(a: A, b: A): A = complement(or(a, b))
+  def nxor(a: A, b: A): A = and(or(a, complement(b)), or(complement(a), b))
+
+  def dual: BooleanAlgebra[A] = new BooleanAlgebra[A] {
+    def one: A = self.zero
+    def zero: A = self.one
+    def and(a: A, b: A): A = self.or(a, b)
+    def or(a: A, b: A): A = self.and(a, b)
+    def complement(a: A): A = self.complement(a)
+    override def xor(a: A, b: A): A = self.complement(self.xor(a, b))
+
+    override def dual: BooleanAlgebra[A] = self
+  }
+}
+
+object BooleanAlgebra {
+  @inline final def apply[@specialized(Boolean, Byte, Short, Int, Long) A](
+    implicit ev: BooleanAlgebra[A]): BooleanAlgebra[A] = ev
+}
+
+
+trait BitString[@spec(Byte, Short, Int, Long) A] extends BooleanAlgebra[A] {
+  def signed: Boolean
+  def width: Int
+  def toHexString(n: A): String
+
+  def bitCount(n: A): Int
+  def highestOneBit(n: A): A
+  def lowestOneBit(n: A): A
+  def numberOfLeadingZeros(n: A): Int
+  def numberOfTrailingZeros(n: A): Int
+
+  def leftShift(n: A, i: Int): A
+  def rightShift(n: A, i: Int): A
+  def signedRightShift(n: A, i: Int): A
+  def rotateLeft(n: A, i: Int): A
+  def rotateRight(n: A, i: Int): A
+}
+
+object BitString {
+  def apply[A](implicit ev: BitString[A]): BitString[A] = ev
+}
+///////////////////////////////////////////////////////////////////////////
+//Long implementation
+
+trait LongIsEuclideanRing extends EuclideanRing[Long] {
+  override def minus(a:Long, b:Long): Long = a - b
+  def negate(a:Long): Long = -a
+  def one: Long = 1L
+  def plus(a:Long, b:Long): Long = a + b
+  override def pow(a: Long, b:Int): Long = b match {
+    case 0 => 1
+    case 1 => a
+    case 2 => a * a
+    case 3 => a * a * a
+    case _ =>
+      if (b > 0) {
+        val e = b >> 1
+        val c = if ((b & 1) == 1) a else 1
+        c * pow(a, e) * pow(a, e)
+      } else {
+        0
+      }
+  }
+  override def times(a:Long, b:Long): Long = a * b
+  def zero: Long = 0L
+  
+  override def fromInt(n: Int): Long = n
+
+  def quot(a:Long, b:Long) = a / b
+  def mod(a:Long, b:Long) = a % b
+  def gcd(a:Long, b:Long) = spire.math.gcd(a, b)
+}
+
+// Not included in Instances trait!
+trait LongIsNRoot extends NRoot[Long] {
+  def nroot(x: Long, n: Int): Long = {
+    def findnroot(prev: Long, add: Long): Long = {
+      val next = prev | add
+      val e = Math.pow(next, n)
+
+      if (e == x || add == 0) {
+        next
+      } else if (e <= 0 || e > x) {
+        findnroot(prev, add >> 1)
+      } else {
+        findnroot(next, add >> 1)
+      }
+    }
+
+    if (n < 1) throw new IllegalArgumentException(s"nroot($n)")
+    else if (n == 1) x
+    else findnroot(0, 1L << ((65 - n) / n))
+  }
+  def log(a:Long) = Math.log(a.toDouble).toLong
+  def fpow(a:Long, b:Long) = spire.math.pow(a, b) // xyz
+}
+
+trait LongOrder extends Order[Long] {
+  override def eqv(x:Long, y:Long) = x == y
+  override def neqv(x:Long, y:Long) = x != y
+  override def gt(x: Long, y: Long) = x > y
+  override def gteqv(x: Long, y: Long) = x >= y
+  override def lt(x: Long, y: Long) = x < y
+  override def lteqv(x: Long, y: Long) = x <= y
+  def compare(x: Long, y: Long) = if (x < y) -1 else if (x == y) 0 else 1
+}
+
+trait LongIsSigned extends Signed[Long] {
+  def signum(a: Long): Int = java.lang.Long.signum(a)
+  def abs(a: Long): Long = if (a < 0L) -a else a
+}
+
+trait LongIsReal extends IsIntegral[Long] with LongOrder with LongIsSigned {
+  def toDouble(n: Long): Double = n.toDouble
+}
+
+@SerialVersionUID(0L)
+class LongIsBitString extends BitString[Long] with Serializable {
+  def one: Long = -1L
+  def zero: Long = 0L
+  def and(a: Long, b: Long): Long = a & b
+  def or(a: Long, b: Long): Long = a | b
+  def complement(a: Long): Long = ~a
+  override def xor(a: Long, b: Long): Long = a ^ b
+
+  def signed: Boolean = true
+  def width: Int = 64
+  def toHexString(n: Long): String = java.lang.Long.toHexString(n)
+
+  def bitCount(n: Long): Int = java.lang.Long.bitCount(n)
+  def highestOneBit(n: Long): Long = java.lang.Long.highestOneBit(n)
+  def lowestOneBit(n: Long): Long = java.lang.Long.lowestOneBit(n)
+  def numberOfLeadingZeros(n: Long): Int = java.lang.Long.numberOfLeadingZeros(n)
+  def numberOfTrailingZeros(n: Long): Int = java.lang.Long.numberOfTrailingZeros(n)
+
+  def leftShift(n: Long, i: Int): Long = n << i
+  def rightShift(n: Long, i: Int): Long = n >> i
+  def signedRightShift(n: Long, i: Int): Long = n >>> i
+  def rotateLeft(n: Long, i: Int): Long = java.lang.Long.rotateLeft(n, i)
+  def rotateRight(n: Long, i: Int): Long = java.lang.Long.rotateRight(n, i)
+}
+
+@SerialVersionUID(0L)
+class LongAlgebra extends LongIsEuclideanRing with LongIsNRoot with LongIsReal with Serializable
+
+trait LongInstances {
+  implicit final val LongBitString = new LongIsBitString
+  implicit final val LongAlgebra = new LongAlgebra
+}
+
+///////////////////////////////////////////////////////////////////////////
+//Int implementation
+
+trait IntIsEuclideanRing extends EuclideanRing[Int] {
+  override def minus(a:Int, b:Int): Int = a - b
+  def negate(a:Int): Int = -a
+  def one: Int = 1
+  def plus(a:Int, b:Int): Int = a + b
+  override def pow(a:Int, b:Int): Int = Math.pow(a, b).toInt
+  override def times(a:Int, b:Int): Int = a * b
+  def zero: Int = 0
+
+  override def fromInt(n: Int): Int = n
+
+  def quot(a:Int, b:Int) = a / b
+  def mod(a:Int, b:Int) = a % b
+  def gcd(a:Int, b:Int): Int = spire.math.gcd(a, b).toInt
+}
+
+// Not included in Instances trait.
+trait IntIsNRoot extends NRoot[Int] {
+  def nroot(x: Int, n: Int): Int = {
+    def findnroot(prev: Int, add: Int): Int = {
+      val next = prev | add
+      val e = Math.pow(next, n)
+
+      if (e == x || add == 0) {
+        next
+      } else if (e <= 0 || e > x) {
+        findnroot(prev, add >> 1)
+      } else {
+        findnroot(next, add >> 1)
+      }
+    }
+
+    findnroot(0, 1 << ((33 - n) / n))
+  }
+
+  def log(a:Int) = Math.log(a.toDouble).toInt
+  def fpow(a:Int, b:Int) = Math.pow(a, b).toInt
+}
+
+trait IntOrder extends Order[Int] {
+  override def eqv(x: Int, y: Int) = x == y
+  override def neqv(x: Int, y: Int) = x != y
+  override def gt(x: Int, y: Int) = x > y
+  override def gteqv(x: Int, y: Int) = x >= y
+  override def lt(x: Int, y: Int) = x < y
+  override def lteqv(x: Int, y: Int) = x <= y
+  def compare(x: Int, y: Int) = if (x < y) -1 else if (x == y) 0 else 1
+}
+
+trait IntIsSigned extends Signed[Int] {
+  def signum(a: Int): Int = java.lang.Integer.signum(a)
+  def abs(a: Int): Int = if (a < 0) -a else a
+}
+
+trait IntIsReal extends IsIntegral[Int] with IntOrder with IntIsSigned {
+  def toDouble(n: Int): Double = n.toDouble
+}
+
+@SerialVersionUID(0L)
+class IntIsBitString extends BitString[Int] with Serializable {
+  def one: Int = -1
+  def zero: Int = 0
+  def and(a: Int, b: Int): Int = a & b
+  def or(a: Int, b: Int): Int = a | b
+  def complement(a: Int): Int = ~a
+  override def xor(a: Int, b: Int): Int = a ^ b
+
+  def signed: Boolean = true
+  def width: Int = 32
+  def toHexString(n: Int): String = Integer.toHexString(n)
+
+  def bitCount(n: Int): Int = Integer.bitCount(n)
+  def highestOneBit(n: Int): Int = Integer.highestOneBit(n)
+  def lowestOneBit(n: Int): Int = Integer.lowestOneBit(n)
+  def numberOfLeadingZeros(n: Int): Int = Integer.numberOfLeadingZeros(n)
+  def numberOfTrailingZeros(n: Int): Int = Integer.numberOfTrailingZeros(n)
+
+  def leftShift(n: Int, i: Int): Int = n << i
+  def rightShift(n: Int, i: Int): Int = n >>> i
+  def signedRightShift(n: Int, i: Int): Int = n >> i
+  def rotateLeft(n: Int, i: Int): Int = Integer.rotateLeft(n, i)
+  def rotateRight(n: Int, i: Int): Int = Integer.rotateRight(n, i)
+}
+
+@SerialVersionUID(0L)
+class IntAlgebra extends IntIsEuclideanRing with IntIsNRoot with IntIsReal with Serializable
+
+trait IntInstances {
+  implicit final val IntBitString = new IntIsBitString
+  implicit final val IntAlgebra = new IntAlgebra
+}
+
+///////////////////////////////////////////////////////////////////////////
 
 //Double implementation
 
@@ -65,7 +358,7 @@ trait DoubleIsField extends Field[Double] {
   def one: Double = 1.0
   def plus(a:Double, b:Double): Double = a + b
  //TODO: take a look at this override and pow method in Rig
-  override def pow(a:Double, b:Int): Double = Math.pow(a, b)
+  override def  pow(a:Double, b:Int): Double = Math.pow(a, b)
   override def times(a:Double, b:Double): Double = a * b
   def zero: Double = 0.0
 
