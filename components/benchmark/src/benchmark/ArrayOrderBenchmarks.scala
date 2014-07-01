@@ -1,5 +1,5 @@
 package benchmark
-//This benchmark will work only after RexBenchamrk will be finished
+//This benchmark will be working only after RexBenchamrk will be finished
 /*
 import scala.{specialized => spec}
 import scala.annotation.tailrec

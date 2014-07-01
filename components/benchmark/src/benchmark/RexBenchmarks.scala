@@ -2,16 +2,14 @@ package benchmark
 
 
 import scala.{specialized => spec}
-
-
-
 import scala.reflect.ClassTag
-//Those classes don't have type parameters
-import spire.implicits._
+
 import scala.util.Random._
+import com.google.caliper.Runner
+import com.google.caliper.SimpleBenchmark
 import com.google.caliper.Param
 
-//imports used for Private Spire implementation
+// Imports used for Private Spire Implementation
 import java.lang.Math
 import java.lang.Long.{ numberOfTrailingZeros, numberOfLeadingZeros }
 import java.lang.Float.{ intBitsToFloat, floatToIntBits }
@@ -19,6 +17,8 @@ import java.lang.Double.{ isInfinite, isNaN, doubleToLongBits,longBitsToDouble }
 import scala.annotation.{ switch, tailrec }
 import java.math.MathContext
 import scala.{specialized => sp}
+import scala.language.experimental.macros
+import spire.macrosk.Ops
 
 
 // Rex BENCHMARK
@@ -107,14 +107,18 @@ class RexBenchmarks extends MyBenchmark with BenchmarkData {
     ai(k)
   }
 
-  def nearlyMaxG[@spec A: Numeric: ClassTag](a: Array[A], k: Int, start: Int = 0, end: Int = -1)(implicit  o:Order[A]): A = {
+  def nearlyMaxG[@spec A : Numeric: ClassTag](a: Array[A], k: Int, start: Int = 0, end: Int = -1): A = {
     val i0 = if (start >= 0) start else a.length + start
     val i1 = if (end >= 0) end else a.length + end + 1
     val ai = new Array[A](math.max(k, 0) + 1)
     var i = i0 + 1
     var j = 0
+    val x = a(0)
+    
+    
     ai(0) = a(i0)
     while (i < i1) {
+      
       if (a(i) > ai(j)) {
         var h = j - 1
         if (j < k) { ai(j + 1) = ai(j); j += 1 }
@@ -133,9 +137,17 @@ class RexBenchmarks extends MyBenchmark with BenchmarkData {
   
 }
 
+
+final class OrderOps[A](lhs: A)(implicit ev: Order[A]) {
+  def >(rhs: A): Boolean = macro Ops.binop[A, Boolean]
+
+}
+
+
+
 //******************************************************************//
 
-// This part consists on isolating the needed spire implementation for this benchamark
+// This part consists on isolating the needed spire implementation for this benchmark
 
 //*****************************************************************//
 
@@ -143,14 +155,14 @@ class RexBenchmarks extends MyBenchmark with BenchmarkData {
 
 trait Numeric[@spec(Int,Long,Float,Double) A] extends Ring[A]
 with AdditiveAbGroup[A] with MultiplicativeAbGroup[A] with NRoot[A]
-with ConvertableFrom[A] with ConvertableTo[A] with IsReal[A]
+with ConvertableFrom[A] with ConvertableTo[A] with IsReal[A] 
 
 object Numeric {
  
   implicit final val FloatIsNumeric: Numeric[Float] = new FloatIsNumeric
   implicit final val DoubleIsNumeric: Numeric[Double] = new DoubleIsNumeric
   
-  private val defaultApprox = ApproximationContext(Rational(1, 1000000000))
+  //private val defaultApprox = ApproximationContext(Rational(1, 1000000000))
 
   @inline final def apply[A](implicit ev: Numeric[A]):Numeric[A] = ev
 }
@@ -192,7 +204,7 @@ trait DoubleIsField extends Field[Double] {
   def quot(a:Double, b:Double) = (a - (a % b)) / b
   def mod(a:Double, b:Double) = a % b
 
-  final def gcd(a:Double, b:Double):Double = {
+ /* final def gcd(a:Double, b:Double):Double = {
     def value(bits: Long): Long = bits & 0x000FFFFFFFFFFFFFL | 0x0010000000000000L
 
     def exp(bits: Long): Int = ((bits >> 52) & 0x7FF).toInt
@@ -200,7 +212,7 @@ trait DoubleIsField extends Field[Double] {
     def gcd0(val0: Long, exp0: Int, val1: Long, exp1: Int): Double = {
       val tz0 = numberOfTrailingZeros(val0)
       val tz1 = numberOfTrailingZeros(val1)
-      val tzShared = spire.math.min(tz0, tz1 + exp1 - exp0)
+      val tzShared = math.min(tz0, tz1 + exp1 - exp0)
       val n = spire.math.gcd(val0 >>> tz0, val1 >>> tz1) << tzShared
 
       val shift = numberOfLeadingZeros(n) - 11 // Number of bits to move 1 to bit 52
@@ -224,7 +236,7 @@ trait DoubleIsField extends Field[Double] {
       else gcd0(bVal, bExp, aVal, aExp)
     }
   }
-
+*/
   override def fromDouble(n: Double): Double = n
   def div(a:Double, b:Double) = a / b
 }
@@ -1384,6 +1396,7 @@ object IsReal {
 //////////////////////////////////////////////////////////////////////////////////////////////
 
 //Order
+
 trait Order[@spec A] extends Eq[A] {
   self =>
 
@@ -1512,56 +1525,7 @@ object Eq {
   def by[@spec A, @spec B](f:A => B)(implicit e:Eq[B]): Eq[A] = new MappedEq(e)(f)
 }
 
-////////////////////////////////////////////////////////////////////////////////////
 
-//Integral
-/*
-
-trait Integral[@sp(Int,Long) A] extends EuclideanRing[A] with ConvertableFrom[A] with ConvertableTo[A] with IsReal[A]
-
-object Integral {
-  implicit final val IntIsIntegral = new IntIsIntegral
-  implicit final val LongIsIntegral = new LongIsIntegral
-  implicit final val BigIntIsIntegral = new BigIntIsIntegral
-  implicit final val SafeLongIsIntegral = new SafeLongIsIntegral
-
-  @inline final def apply[A](implicit ev: Integral[A]) = ev
-}
-
-class IntegralOps[A](lhs: A)(implicit ev: Integral[A]) {
-  def factor: prime.Factors = prime.factor(toSafeLong)
-  def isPrime: Boolean = prime.isPrime(toSafeLong)
-  def toSafeLong: SafeLong = SafeLong(ev.toBigInt(lhs))
-}
-
-@SerialVersionUID(0L)
-private class IntIsIntegral extends Integral[Int] with IntIsEuclideanRing
-with ConvertableFromInt with ConvertableToInt with IntIsReal with Serializable {
-  override def fromInt(n: Int): Int = n
-  override def toDouble(n: Int): Double = n.toDouble
-}
-
-@SerialVersionUID(0L)
-private class LongIsIntegral extends Integral[Long] with LongIsEuclideanRing
-with ConvertableFromLong with ConvertableToLong with LongIsReal with Serializable {
-  override def fromInt(n: Int): Long = n.toLong
-  override def toDouble(n: Long): Double = n.toDouble
-}
-
-@SerialVersionUID(0L)
-private class BigIntIsIntegral extends Integral[BigInt] with BigIntIsEuclideanRing
-with ConvertableFromBigInt with ConvertableToBigInt with BigIntIsReal with Serializable {
-  override def fromInt(n: Int): BigInt = BigInt(n)
-  override def toDouble(n: BigInt): Double = n.toDouble
-}
-
-@SerialVersionUID(0L)
-private class SafeLongIsIntegral extends Integral[SafeLong] with SafeLongIsEuclideanRing
-with ConvertableFromSafeLong with ConvertableToSafeLong with SafeLongIsReal with Serializable {
-  override def fromInt(n: Int): SafeLong = SafeLong(n)
-  override def toDouble(n: SafeLong): Double = n.toDouble
-}
-*/
 ////////////////////////////////////////////////////////////////////////////////////////
 
 // Math 
