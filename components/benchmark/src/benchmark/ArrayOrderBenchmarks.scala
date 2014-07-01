@@ -1,6 +1,6 @@
 package benchmark
-//This benchmark will be working only after RexBenchamrk will be finished
-/*
+
+
 import scala.{specialized => spec}
 import scala.annotation.tailrec
 import scala.reflect.ClassTag
@@ -8,8 +8,8 @@ import scala.reflect.ClassTag
 import scala.util.Random
 import Random._
 
-import spire.algebra._
-import spire.implicits._
+//import spire.algebra._
+//import spire.implicits._
 
 import com.google.caliper.Runner 
 import com.google.caliper.SimpleBenchmark
@@ -27,6 +27,17 @@ class ArrayOrderBenchmarks extends MyBenchmark {
   var d: Array[Int] = null
   var e: Array[Int] = null
   var f: Array[Int] = null
+  
+  //Implicit definitions
+  implicit object myOrderInt extends Order[Int]{
+	def compare(x:Int,y:Int):Int = 
+    	  if(x<y) -1
+      	  else if (x > y) 1
+      	  else 0
+  }
+  
+  implicit object myRingInt extends Ring[Int]
+  
 
   override protected def setUp() {
     val size = spire.math.pow(2, pow).toInt
@@ -42,7 +53,8 @@ class ArrayOrderBenchmarks extends MyBenchmark {
   def directEq(x: Array[Int], y: Array[Int]): Boolean = {
     var i = 0
     if (x.length != y.length) return false
-    while (i < x.length && i < y.length && x(i) === y(i)) i += 1
+    //TODO: == in while was a ===. Take care of diferencies, if we have
+    while (i < x.length && i < y.length && x(i) == y(i)) i += 1
     i == x.length
   }
 
@@ -58,10 +70,10 @@ class ArrayOrderBenchmarks extends MyBenchmark {
   }
 
   def indirectAdd[@spec(Int) A: ClassTag: Ring](x: Array[A], y: Array[A]): Array[A] =
-    spire.std.ArraySupport.plus(x, y)
+   ArraySupport.plus(x, y)
 
   def directAdd(x: Array[Int], y: Array[Int]): Array[Int] = {
-    val z = new Array[Int](spire.math.max(x.length, y.length))
+    val z = new Array[Int](math.max(x.length, y.length))
     var i = 0
     while (i < x.length && i < y.length) { z(i) = x(i) + y(i); i += 1 }
     while (i < x.length) { z(i) = x(i); i += 1 }
@@ -79,4 +91,3 @@ class ArrayOrderBenchmarks extends MyBenchmark {
   def timeAddIndirect(reps: Int) = run(reps) { indirectAdd(a, b) }
   def timeAddDirect(reps: Int) = run(reps) { directAdd(a, b) }
 }
-*/
