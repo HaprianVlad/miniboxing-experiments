@@ -3,6 +3,7 @@ package benchmark
 
 import scala.{specialized => spec}
 import scala.reflect.ClassTag
+import scala.language.implicitConversions
 
 // Imports used for Private Spire Implementation
 import java.lang.Math
@@ -12,8 +13,9 @@ import java.lang.Double.{ isInfinite, isNaN, doubleToLongBits,longBitsToDouble }
 import scala.annotation.{ switch, tailrec }
 import java.math.MathContext
 import scala.{specialized => sp}
-import scala.language.experimental.macros
-import spire.macrosk.Ops
+import scala.math.{ScalaNumber, ScalaNumericConversions, ScalaNumericAnyConversions}
+
+
 
 //******************************************************************//
 
@@ -1794,6 +1796,25 @@ trait Trig[@spec(Float, Double) A] {
 object Trig {
   @inline final def apply[A](implicit t: Trig[A]) = t
 }
+///////////////////////////////////////////////////////////////////////////////////////
+
+//Complex and FastComplex
+
+final case class Complex[@spec(Float, Double) T](real: T, imag: T)
+   
+object FastComplex {
+  final def apply(real: Float, imag: Float) = encode(real, imag)
+  final def apply(real: Double, imag: Double) = encode(real.toFloat, imag.toFloat)
+  
+  // encode two floats representing a complex number
+  @inline final def encode(real: Float, imag: Float): Long = {
+    (bits(imag).toLong << 32) + bits(real).toLong
+  }
+  @inline final def bits(n: Float): Int = java.lang.Float.floatToRawIntBits(n)
+  
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
 // ArraySupport

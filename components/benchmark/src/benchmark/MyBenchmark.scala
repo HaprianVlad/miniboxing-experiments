@@ -1,5 +1,3 @@
-
-
 package benchmark
 
 import scala.reflect.ClassTag
@@ -7,10 +5,6 @@ import spire.implicits._
 import scala.util.Random._
 import com.google.caliper.Runner
 import com.google.caliper.SimpleBenchmark
-
-//TODO: take a look here
-import spire.math.Complex
-import spire.math.FastComplex
 
 //Imports used in Private Spire Implementation
 import scala.reflect.ClassTag
@@ -94,19 +88,11 @@ trait BenchmarkData extends MyBenchmark {
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 // Sorting
-
-/**
- *  Interface for a sorting strategy object.
- */
 trait Sort {
   def sort[@spec A:Order:ClassTag](data:Array[A]): Unit
 }
 
-/**
- * Simple implementation of insertion sort.
- *
- * Works for small arrays but due to O(n^2) complexity is not generally good.
- */
+
 object InsertionSort extends Sort {
   final def sort[@spec A:Order:ClassTag](data:Array[A]) =
     sort(data, 0, data.length)
@@ -128,12 +114,7 @@ object InsertionSort extends Sort {
   }
 }
 
-/**
- * In-place merge sort implementation. This sort is stable but does mutate
- * the given array. It is an in-place sort but it does allocate a temporary
- * array of the same size as the input. It uses InsertionSort for sorting very
- * small arrays.
- */
+
 object MergeSort extends Sort {
   @inline final def startWidth = 8
   @inline final def startStep = 16
@@ -173,12 +154,7 @@ object MergeSort extends Sort {
     if (buf1 != data) System.arraycopy(buf1, 0, data, 0, len)
   }
 
-  /**
-   * Helper method for mergeSort, used to do a single "merge" between two
-   * sections of the input array. The start, mid and end parameters denote the
-   * left and right ranges of the input to merge, as well as the area of the
-   * ouput to write to.
-   */
+
   @inline final def merge[@spec A]
     (in:Array[A], out:Array[A], start:Int, mid:Int, end:Int)
     (implicit o:Order[A]) {
@@ -197,22 +173,14 @@ object MergeSort extends Sort {
   }
 }
 
-/**
- * In-place quicksort implementation. It is not stable, but does not allocate
- * extra space (other than stack). Like MergeSort, it uses InsertionSort for
- * sorting very small arrays.
- */
+
 object QuickSort {
   @inline final def limit = 16
-
   final def sort[@spec A:Order:ClassTag](data:Array[A]) = qsort(data, 0, data.length - 1)
-
   final def qsort[@spec A]
     (data:Array[A], left: Int, right: Int)
     (implicit o:Order[A], ct:ClassTag[A]) {
-
     if (right - left < limit) return InsertionSort.sort(data, left, right + 1)
-
     val pivot = left + (right - left) / 2
     val next = partition(data, left, right, pivot)
     qsort(data, left, next - 1)
@@ -222,39 +190,24 @@ object QuickSort {
   final def partition[@spec A]
     (data:Array[A], left:Int, right:Int, pivot:Int)
     (implicit o:Order[A], ct:ClassTag[A]): Int = {
-
     val value = data(pivot)
-
-    //swap(pivot, right)
     var tmp = data(pivot); data(pivot) = data(right); data(right) = tmp
-
     var store = left
     var i = left
     while (i < right) {
       if (o.lt(data(i), value)) {
-        //swap(i, store)
+      
         tmp = data(i); data(i) = data(store); data(store) = tmp
         store += 1
       }
       i += 1
     }
-    //swap(store, right)
     tmp = data(store); data(store) = data(right); data(right) = tmp
     store
   }
 }
 
-// TODO: it would be nice to try implementing some hybrid sorts, for instance
-// Tim Peters' sort algorithm.
 
-/**
- * Object providing in-place sorting capability for arrays.
- *
- * Sorting.sort() uses quickSort() by default (in-place, not stable, generally
- * fastest but might hit bad cases where it's O(n^2)). Also provides
- * mergeSort() (in-place, stable, uses extra memory, still pretty fast) and
- * insertionSort(), which is slow except for small arrays.
- */
 object Sorting {
   final def sort[@spec A:Order:ClassTag](data:Array[A]) = QuickSort.sort(data)
 
