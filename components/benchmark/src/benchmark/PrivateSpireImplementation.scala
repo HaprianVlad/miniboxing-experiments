@@ -1804,18 +1804,18 @@ object ArraySupport {
    
     val z = new Array[A](math.max(x.length, y.length))
     var i = 0
-    while (i < x.length && i < y.length) { z(i) = x(i) + y(i); i += 1 }
+    while (i < x.length && i < y.length) { z(i) = implicitly[AdditiveMonoid[A]].plus(x(i), y(i)); i += 1 }
     while (i < x.length) { z(i) = x(i); i += 1 }
     while (i < y.length) { z(i) = y(i); i += 1 }
     z
   }
 }
-
+/*
 //////////////////////////////////////////////////////////////////////////////////////
 
 //AdditiveSemigroupOps for infering + operation on generic values
 final class AdditiveSemigroupOps[A](lhs:A)(implicit ev:AdditiveSemigroup[A]) {
   def +(rhs:A): A = macro Ops.binop[A, A]
 }
-
+*/
 

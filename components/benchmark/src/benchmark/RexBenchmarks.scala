@@ -108,10 +108,10 @@ class RexBenchmarks extends MyBenchmark with BenchmarkData {
     var j = 0
     ai(0) = a(i0)
     while (i < i1) {
-      if (a(i) > ai(j)) {
+      if (implicitly[Numeric[A]].gt(a(i),ai(j))) {
         var h = j - 1
         if (j < k) { ai(j + 1) = ai(j); j += 1 }
-        while (h >= 0 && a(i) > ai(h)) { ai(h + 1) = ai(h); h -= 1 }
+        while (h >= 0 && implicitly[Numeric[A]].gt(a(i),ai(h))) { ai(h + 1) = ai(h); h -= 1 }
         ai(h + 1) = a(i)
       } else if (j < k) {
         j += 1
@@ -125,7 +125,7 @@ class RexBenchmarks extends MyBenchmark with BenchmarkData {
   
   
 }
-
+/*
 //////////////////////////////////////////////////////////////////////////////////////
 
 // Things we need for infering the right operator for generic types
@@ -146,5 +146,5 @@ trait EqSyntax {
 trait OrderSyntax extends EqSyntax {
   implicit def orderOps[A:Order](a:A) = new OrderOps(a)
 }
-
+*/
 
