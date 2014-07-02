@@ -91,6 +91,6 @@ object MiniboxingBuild extends Build {
 
   lazy val _mboxing = Project(id = "spire-mbox", base = file("."), settings = defaults) aggregate (example,benchmark)
   lazy val example = Project(id = "spire-mbox-example", base = file("components/example"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings ++ spireSettings)
-  lazy val benchmark = Project(id = "benchmark", base = file("components/benchmark"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings ++ spireSettings)
+  lazy val benchmark = Project(id = "benchmark", base = file("components/benchmark"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings )
 
 }

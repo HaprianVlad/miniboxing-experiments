@@ -17,6 +17,7 @@ import scala.math.{ScalaNumber, ScalaNumericConversions, ScalaNumericAnyConversi
 
 
 
+
 //******************************************************************//
 
 // This part consists on isolating the needed spire implementation for this benchmark
@@ -175,7 +176,7 @@ trait LongIsEuclideanRing extends EuclideanRing[Long] {
 
   def quot(a:Long, b:Long) = a / b
   def mod(a:Long, b:Long) = a % b
-  def gcd(a:Long, b:Long) = spire.math.gcd(a, b)
+  def gcd(a:Long, b:Long) = math.gcd(a, b)
 }
 
 // Not included in Instances trait!
@@ -199,7 +200,7 @@ trait LongIsNRoot extends NRoot[Long] {
     else findnroot(0, 1L << ((65 - n) / n))
   }
   def log(a:Long) = Math.log(a.toDouble).toLong
-  def fpow(a:Long, b:Long) = spire.math.pow(a, b) // xyz
+  def fpow(a:Long, b:Long) = math.pow(a, b) // xyz
 }
 
 trait LongOrder extends Order[Long] {
@@ -271,7 +272,7 @@ trait IntIsEuclideanRing extends EuclideanRing[Int] {
 
   def quot(a:Int, b:Int) = a / b
   def mod(a:Int, b:Int) = a % b
-  def gcd(a:Int, b:Int): Int = spire.math.gcd(a, b).toInt
+  def gcd(a:Int, b:Int): Int = math.gcd(a, b).toInt
 }
 
 // Not included in Instances trait.
@@ -378,7 +379,7 @@ trait DoubleIsField extends Field[Double] {
       val tz0 = numberOfTrailingZeros(val0)
       val tz1 = numberOfTrailingZeros(val1)
       val tzShared = math.min(tz0, tz1 + exp1 - exp0)
-      val n = spire.math.gcd(val0 >>> tz0, val1 >>> tz1) << tzShared
+      val n = math.gcd(val0 >>> tz0, val1 >>> tz1) << tzShared
 
       val shift = numberOfLeadingZeros(n) - 11 // Number of bits to move 1 to bit 52
       val mantissa = (n << shift) & 0x000FFFFFFFFFFFFFL
@@ -459,7 +460,7 @@ trait DoubleIsReal extends IsReal[Double] with DoubleOrder with DoubleIsSigned {
   def toDouble(x: Double): Double = x
   def ceil(a:Double): Double = Math.floor(a)
   def floor(a:Double): Double = Math.floor(a)
-  def round(a:Double): Double = spire.math.round(a)
+  def round(a:Double): Double = math.round(a)
   def isWhole(a:Double) = a % 1.0 == 0.0
 }
 
@@ -496,8 +497,8 @@ trait FloatIsField extends Field[Float] {
     def gcd0(val0: Int, exp0: Int, val1: Int, exp1: Int): Float = {
       val tz0 = numberOfTrailingZeros(val0)
       val tz1 = numberOfTrailingZeros(val1)
-      val tzShared = spire.math.min(tz0, tz1 + exp1 - exp0)
-      val n = spire.math.gcd(val0 >>> tz0, val1 >>> tz1).toInt << tzShared
+      val tzShared = math.min(tz0, tz1 + exp1 - exp0)
+      val n = math.gcd(val0 >>> tz0, val1 >>> tz1).toInt << tzShared
 
       val shift = numberOfLeadingZeros(n) - 8 // Number of bits to move 1 to bit 23
       val mantissa = (n << shift) & 0x007FFFFF
@@ -579,7 +580,7 @@ trait FloatIsReal extends IsReal[Float] with FloatOrder with FloatIsSigned {
   def toDouble(x: Float): Double = x.toDouble
   def ceil(a:Float): Float = Math.floor(a).toFloat
   def floor(a:Float): Float = Math.floor(a).toFloat
-  def round(a:Float): Float = spire.math.round(a)
+  def round(a:Float): Float = math.round(a)
   def isWhole(a:Float) = a % 1.0 == 0.0
 }
 
@@ -1640,7 +1641,7 @@ sealed abstract class Sign(val toInt: Int) {
 
   def *(that: Sign): Sign = Sign(this.toInt * that.toInt)
 
-  def **(that: Int): Sign = Sign(spire.math.pow(this.toInt, that).toInt)
+  def **(that: Int): Sign = Sign(math.pow(this.toInt, that).toInt)
 }
 
 object Sign {
@@ -1715,6 +1716,109 @@ package object math {
   final def max(x: Float, y: Float): Float = Math.max(x, y)
   final def max(x: Double, y: Double): Double = Math.max(x, y)
   final def max[A](x: A, y: A)(implicit ev: Order[A]) = ev.max(x, y)
+  
+   /**
+   * round
+   */
+  final def round(a: Float): Float =
+    if (Math.abs(a) >= 16777216.0F) a else Math.round(a).toFloat
+  final def round(a: Double): Double =
+    if (Math.abs(a) >= 4503599627370496.0) a else Math.round(a).toDouble
+  final def round[A](a: A)(implicit ev: IsReal[A]): A = ev.round(a)
+  
+   /**
+   * gcd
+   */
+  final def gcd(_x: Long, _y: Long): Long = {
+    if (_x == 0L) return Math.abs(_y)
+    if (_y == 0L) return Math.abs(_x)
+  
+    var x = _x
+    var xz = numberOfTrailingZeros(x)
+    x = Math.abs(x >> xz)
+  
+    var y = _y
+    var yz = numberOfTrailingZeros(y)
+    y = Math.abs(y >> yz)
+
+    while (x != y) {
+      if (x > y) {
+        x -= y
+        x >>= numberOfTrailingZeros(x)
+      } else {
+        y -= x
+        y >>= numberOfTrailingZeros(y)
+      }
+    }
+
+    if (xz < yz) x << xz else x << yz
+  }
+
+  final def gcd(a: BigInt, b: BigInt): BigInt = a.gcd(b)
+  final def gcd[A](x: A, y: A)(implicit ev: EuclideanRing[A]): A = ev.gcd(x, y)
+  final def gcd[A](xs: Seq[A])(implicit ev: EuclideanRing[A]): A =
+    xs.foldLeft(ev.zero) { (x, y) => gcd(y, x) }
+  final def gcd[A](x: A, y: A, z: A, rest: A*)(implicit ev: EuclideanRing[A]): A =
+    gcd(gcd(gcd(x, y), z), gcd(rest))
+ 
+    /**
+   * exp
+   */
+  final def exp(n: Double): Double = Math.exp(n)
+
+  /*final def exp(k: Int, precision: Int): BigDecimal = {
+    val mc = new MathContext(precision + 1, RoundingMode.HALF_UP)
+    var i = 2
+    var num = BigInt(2)
+    var denom = BigInt(1)
+
+    val limit = BigInt(10).pow(precision)
+    while (denom < limit) {
+      denom = denom * i
+      num = num * i + BigInt(1)
+      i += 1
+    }
+    val sum = BigDecimal(num, mc) / BigDecimal(denom, mc)
+    sum.setScale(precision - sum.precision + sum.scale, FLOOR).pow(k)
+  }*/
+  final def exp[A](a: A)(implicit t: Trig[A]): A = t.exp(a)
+
+  /**
+   * log
+   */
+  final def log(n: Double): Double = Math.log(n)
+
+  final def log[A](a: A)(implicit t: Trig[A]): A = t.log(a)
+  /**
+   * pow
+   */
+  
+  final def pow(base: Long, exponent: Long): Long = {
+    @tailrec def longPow(t: Long, b: Long, e: Long): Long =
+      if (e == 0L) t
+      else if ((e & 1) == 1) longPow(t * b, b * b, e >> 1L)
+      else longPow(t, b * b, e >> 1L)
+
+    if (exponent < 0L) {
+      if(base == 0L) sys.error("zero can't be raised to negative power")
+      else if (base == 1L) 1L
+      else if (base == -1L) if ((exponent & 1L) == 0L) -1L else 1L
+      else 0L
+    } else {
+      longPow(1L, base, exponent)
+    }
+  }
+
+  final def pow(base: Double, exponent: Double) = Math.pow(base, exponent)
+
+   /**
+   * sqrt
+   */
+  final def sqrt(x: Double): Double = Math.sqrt(x)
+  final def sqrt[A](a: A)(implicit ev: NRoot[A]): A = ev.sqrt(a)
+
+    
+  
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////

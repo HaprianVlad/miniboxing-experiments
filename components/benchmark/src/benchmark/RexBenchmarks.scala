@@ -11,7 +11,7 @@ import com.google.caliper.Param
 
 import scala.language.experimental.macros
 import scala.language.implicitConversions
-import spire.macrosk.Ops
+
 
 // Rex BENCHMARK
 
@@ -39,7 +39,7 @@ class RexBenchmarks extends MyBenchmark with BenchmarkData {
   var ds: Array[Double] = null
 
   override protected def setUp() {
-    val size = spire.math.pow(2, pow).toInt
+    val size = math.pow(2, pow).toInt
     fs = mkarray(size, "random")(nextGaussian.toFloat)
     ds = mkarray(size, "random")(nextGaussian)
   }

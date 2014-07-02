@@ -43,7 +43,7 @@ class ArrayOrderBenchmarks extends MyBenchmark {
   
 
   override protected def setUp() {
-    val size = spire.math.pow(2, pow).toInt
+    val size = math.pow(2, pow).toInt
 
     a = init(size)(nextInt)
     b = a.clone

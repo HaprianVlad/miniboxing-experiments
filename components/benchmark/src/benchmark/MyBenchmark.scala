@@ -1,7 +1,6 @@
 package benchmark
 
 import scala.reflect.ClassTag
-import spire.implicits._
 import scala.util.Random._
 import com.google.caliper.Runner
 import com.google.caliper.SimpleBenchmark
