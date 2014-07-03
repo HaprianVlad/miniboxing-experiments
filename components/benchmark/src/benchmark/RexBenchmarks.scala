@@ -8,7 +8,7 @@ import com.google.caliper.Runner
 import com.google.caliper.SimpleBenchmark
 import com.google.caliper.Param
 
-// REX BENCHMARK
+// REX BENCHMARK sPIRE
 
 object RexBenchmarks extends MyRunner(classOf[RexBenchmarks])
 

@@ -10,6 +10,8 @@ import com.google.caliper.Runner
 import com.google.caliper.SimpleBenchmark
 import com.google.caliper.Param
 
+//ARRAY ORDER BENCHMARK GENERIC
+
 object ArrayOrderBenchmarks extends MyRunner(classOf[ArrayOrderBenchmarks])
 
 class ArrayOrderBenchmarks extends MyBenchmark {

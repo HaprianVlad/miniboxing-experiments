@@ -1,4 +1,4 @@
-package benckmark_miniboxed
+package benchmark_miniboxed
 
 import scala.reflect.ClassTag
 import scala.language.implicitConversions

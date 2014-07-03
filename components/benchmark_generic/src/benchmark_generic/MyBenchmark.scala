@@ -1,4 +1,4 @@
-package benckmark_generic
+package benchmark_generic
 
 import scala.reflect.ClassTag
 import scala.util.Random._
@@ -11,7 +11,7 @@ import scala.annotation.tailrec
 /**
  * Extend this to create an actual benchmarking class.
  */
-trait MyBenchmark extends SimpleBenchmark {
+ trait MyBenchmark extends SimpleBenchmark {
   
   /**
    * Sugar for building arrays using a per-cell init function.
@@ -52,7 +52,7 @@ trait MyBenchmark extends SimpleBenchmark {
 /**
  * Extend this to create a main object which will run 'cls' (a benchmark).
  */
- abstract class MyRunner(val cls:java.lang.Class[_ <: com.google.caliper.Benchmark]) {
+ abstract  class MyRunner(val cls:java.lang.Class[_ <: com.google.caliper.Benchmark]) {
   def main(args:Array[String]): Unit = Runner.main(cls, args:_*)
 }
 
@@ -77,12 +77,12 @@ trait BenchmarkData extends MyBenchmark {
 
 /*******************************************************************************************/
 
-//MINIBOXED SPIRE IMPLEMENTATION
+//GENERIC SPIRE IMPLEMENTATION
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 // Sorting
-trait Sort {
+protected trait Sort {
   def sort[ A:Order:ClassTag](data:Array[A]): Unit
 }
 

@@ -2,12 +2,14 @@ package benchmark_generic
 
 
 import scala.reflect.ClassTag
+
 import scala.util.Random._
+
 import com.google.caliper.Runner
 import com.google.caliper.SimpleBenchmark
 import com.google.caliper.Param
 
-// REX BENCHMARK
+// REX BENCHMARK GENERIC
 
 object RexBenchmarks extends MyRunner(classOf[RexBenchmarks])
 
@@ -92,8 +94,7 @@ class RexBenchmarks extends MyBenchmark with BenchmarkData {
     }
     ai(k)
   }
-  
-  //TODO : Take a look if Numeric type is correct
+
   def nearlyMaxG[A : Numeric: ClassTag](a: Array[A], k: Int, start: Int = 0, end: Int = -1): A = {
     
     val i0 = if (start >= 0) start else a.length + start

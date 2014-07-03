@@ -1,4 +1,4 @@
-package benckmark_generic
+package benchmark_generic
 
 
 import scala.reflect.ClassTag
