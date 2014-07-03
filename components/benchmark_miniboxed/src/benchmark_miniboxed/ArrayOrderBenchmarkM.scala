@@ -1,5 +1,4 @@
 package benchmark_miniboxed
-
 import scala.annotation.tailrec
 import scala.reflect.ClassTag
 import scala.util.Random
