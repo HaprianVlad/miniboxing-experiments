@@ -1,4 +1,5 @@
 package benchmark_miniboxed
+
 import scala.annotation.tailrec
 import scala.reflect.ClassTag
 import scala.util.Random
@@ -6,7 +7,6 @@ import Random._
 import com.google.caliper.Runner
 import com.google.caliper.SimpleBenchmark
 import com.google.caliper.Param
-
 
 
 object ArrayOrderBenchmarks extends MyRunner(classOf[ArrayOrderBenchmarks])
@@ -60,7 +60,7 @@ class ArrayOrderBenchmarks extends MyBenchmark {
 
   def directCompare(x: Array[Int], y: Array[Int]): Int = {
     var i = 0
-    val ev = OrderM[Int]
+    val ev = Order[Int]
     while (i < x.length && i < y.length) {
       val cmp = ev.compare(x(i), y(i))
       if (cmp != 0) return cmp

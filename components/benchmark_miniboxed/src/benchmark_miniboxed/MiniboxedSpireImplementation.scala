@@ -1390,7 +1390,7 @@ package object math {
   final def max(x: Double, y: Double): Double = Math.max(x, y)
   final def max[A](x: A, y: A)(implicit ev: Order[A]) = ev.max(x, y)
   
-   /**
+  /**
    * round
    */
   final def round(a: Float): Float =
@@ -1399,7 +1399,7 @@ package object math {
     if (Math.abs(a) >= 4503599627370496.0) a else Math.round(a).toDouble
   final def round[A](a: A)(implicit ev: IsReal[A]): A = ev.round(a)
   
-   /**
+  /**
    * gcd
    */
   final def gcd(_x: Long, _y: Long): Long = {
@@ -1434,26 +1434,10 @@ package object math {
   final def gcd[A](x: A, y: A, z: A, rest: A*)(implicit ev: EuclideanRing[A]): A =
     gcd(gcd(gcd(x, y), z), gcd(rest))
  
-    /**
+  /**
    * exp
    */
   final def exp(n: Double): Double = Math.exp(n)
-
-  /*final def exp(k: Int, precision: Int): BigDecimal = {
-    val mc = new MathContext(precision + 1, RoundingMode.HALF_UP)
-    var i = 2
-    var num = BigInt(2)
-    var denom = BigInt(1)
-
-    val limit = BigInt(10).pow(precision)
-    while (denom < limit) {
-      denom = denom * i
-      num = num * i + BigInt(1)
-      i += 1
-    }
-    val sum = BigDecimal(num, mc) / BigDecimal(denom, mc)
-    sum.setScale(precision - sum.precision + sum.scale, FLOOR).pow(k)
-  }*/
   final def exp[A](a: A)(implicit t: Trig[A]): A = t.exp(a)
 
   /**

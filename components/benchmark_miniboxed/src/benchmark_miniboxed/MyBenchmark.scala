@@ -1,16 +1,11 @@
 package benckmark_miniboxed
 
-package benchmark_miniboxed
-
 import scala.reflect.ClassTag
 import scala.util.Random._
 import com.google.caliper.Runner
 import com.google.caliper.SimpleBenchmark
-
-//Imports used in Private Spire Implementation
 import scala.reflect.ClassTag
 import scala.annotation.tailrec
-
 
 
 /**
