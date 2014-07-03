@@ -1,16 +1,14 @@
-package benchmark
+package benchmark_miniboxed
 
-
-import scala.{specialized => spec}
 import scala.annotation.tailrec
 import scala.reflect.ClassTag
-
 import scala.util.Random
 import Random._
-
-import com.google.caliper.Runner 
+import com.google.caliper.Runner
 import com.google.caliper.SimpleBenchmark
 import com.google.caliper.Param
+
+
 
 object ArrayOrderBenchmarks extends MyRunner(classOf[ArrayOrderBenchmarks])
 
@@ -63,7 +61,7 @@ class ArrayOrderBenchmarks extends MyBenchmark {
 
   def directCompare(x: Array[Int], y: Array[Int]): Int = {
     var i = 0
-    val ev = Order[Int]
+    val ev = OrderM[Int]
     while (i < x.length && i < y.length) {
       val cmp = ev.compare(x(i), y(i))
       if (cmp != 0) return cmp
@@ -72,7 +70,8 @@ class ArrayOrderBenchmarks extends MyBenchmark {
     x.length - y.length
   }
 
-  def indirectAdd[@spec(Int) A: ClassTag: Ring](x: Array[A], y: Array[A]): Array[A] =
+ 
+  def indirectAdd[@miniboxed A: ClassTag: Ring](x: Array[A], y: Array[A]): Array[A] =
    ArraySupport.plus(x, y)
 
   def directAdd(x: Array[Int], y: Array[Int]): Array[Int] = {

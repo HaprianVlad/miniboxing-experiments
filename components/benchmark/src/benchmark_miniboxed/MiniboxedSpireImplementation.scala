@@ -1,11 +1,10 @@
-package benchmark
+package benckmark_miniboxed
 
 
-import scala.{specialized => spec}
 import scala.reflect.ClassTag
 import scala.language.implicitConversions
 
-// Imports used for Private Spire Implementation
+// Imports used for Miniboxed Spire Implementation
 import java.lang.Math
 import java.lang.Long.{ numberOfTrailingZeros, numberOfLeadingZeros }
 import java.lang.Float.{ intBitsToFloat, floatToIntBits }
@@ -19,13 +18,14 @@ import scala.math.{ScalaNumber, ScalaNumericConversions, ScalaNumericAnyConversi
 
 //******************************************************************//
 
-// This part consists on isolating the needed spire implementation for this benchmark
+// This part consists on isolating the needed spire implementation for this benchmark using
+// @minbiboxed anontation instead of @spec and @specialized
 
 //*****************************************************************//
 
 // 1. Numeric
 
-trait Numeric[@spec(Int,Long,Float,Double) A] extends Ring[A]
+trait Numeric[@miniboxed A] extends Ring[A]
 with AdditiveAbGroup[A] with MultiplicativeAbGroup[A] with NRoot[A]
 with ConvertableFrom[A] with ConvertableTo[A] with IsReal[A] 
 
@@ -35,18 +35,7 @@ object Numeric {
   implicit final val LongIsNumeric: Numeric[Long] = new LongIsNumeric
   implicit final val FloatIsNumeric: Numeric[Float] = new FloatIsNumeric
   implicit final val DoubleIsNumeric: Numeric[Double] = new DoubleIsNumeric
-  /*implicit final val BigIntIsNumeric: Numeric[BigInt] = new BigIntIsNumeric
-  implicit final val BigDecimalIsNumeric: Numeric[BigDecimal] = new BigDecimalIsNumeric
-  implicit final val AlgebraicIsNumeric: Numeric[Algebraic] = new AlgebraicIsNumeric
-  implicit final val RealIsNumeric: Numeric[Real] = new RealIsNumeric
-
-  private val defaultApprox = ApproximationContext(Rational(1, 1000000000))
-
-  implicit def RationalIsNumeric(implicit ctx: ApproximationContext[Rational] = defaultApprox): Numeric[Rational] =
-    new RationalIsNumeric
-
-  implicit def complexIsNumeric[A: Fractional: Trig: IsReal] = new ComplexIsNumeric
-*/
+ 
   @inline final def apply[A](implicit ev: Numeric[A]):Numeric[A] = ev
 }
 
@@ -94,7 +83,7 @@ with DoubleIsReal with Serializable {
 ///////////////////////////////////////////////////////////////////////////
 //BitString and BooleanAlgebra implementation
 
-trait BooleanAlgebra[@spec(Boolean, Byte, Short, Int, Long) A] { self =>
+trait BooleanAlgebra[@miniboxed A] { self =>
   def one: A
   def zero: A
   def complement(a: A): A
@@ -120,12 +109,12 @@ trait BooleanAlgebra[@spec(Boolean, Byte, Short, Int, Long) A] { self =>
 }
 
 object BooleanAlgebra {
-  @inline final def apply[@specialized(Boolean, Byte, Short, Int, Long) A](
+  @inline final def apply[@miniboxed A](
     implicit ev: BooleanAlgebra[A]): BooleanAlgebra[A] = ev
 }
 
 
-trait BitString[@spec(Byte, Short, Int, Long) A] extends BooleanAlgebra[A] {
+trait BitString[@miniboxed A] extends BooleanAlgebra[A] {
   def signed: Boolean
   def width: Int
   def toHexString(n: A): String
@@ -596,18 +585,14 @@ trait FloatInstances {
 
 
 
-trait ConvertableTo[@spec A] {
+trait ConvertableTo[@miniboxed A] {
   def fromByte(n: Byte): A
   def fromShort(n: Short): A
   def fromInt(n: Int): A
   def fromLong(n: Long): A
   def fromFloat(n: Float): A
   def fromDouble(n: Double): A
- /* def fromBigInt(n: BigInt): A
-  def fromBigDecimal(n: BigDecimal): A
-  def fromRational(n: Rational): A
-
-  def fromType[B: ConvertableFrom](b: B): A*/
+ 
 }
 
  trait ConvertableToByte extends ConvertableTo[Byte] {
@@ -617,11 +602,7 @@ trait ConvertableTo[@spec A] {
   def fromLong(a: Long): Byte = a.toByte
   def fromFloat(a: Float): Byte = a.toByte
   def fromDouble(a: Double): Byte = a.toByte
-/*  def fromBigInt(a: BigInt): Byte = a.toByte
-  def fromBigDecimal(a: BigDecimal): Byte = a.toByte
-  def fromRational(a: Rational): Byte = a.toBigInt.toByte
 
-  def fromType[B: ConvertableFrom](b: B): Byte = ConvertableFrom[B].toByte(b)*/
 }
 
  trait ConvertableToShort extends ConvertableTo[Short] {
@@ -631,10 +612,7 @@ trait ConvertableTo[@spec A] {
   def fromLong(a: Long): Short = a.toShort
   def fromFloat(a: Float): Short = a.toShort
   def fromDouble(a: Double): Short = a.toShort
- /* def fromBigInt(a: BigInt): Short = a.toShort
-  def fromBigDecimal(a: BigDecimal): Short = a.toShort
-  def fromRational(a: Rational): Short = a.toBigInt.toShort
-  def fromType[B: ConvertableFrom](b: B): Short = ConvertableFrom[B].toShort(b)*/
+
 }
 
  trait ConvertableToInt extends ConvertableTo[Int] {
@@ -644,11 +622,7 @@ trait ConvertableTo[@spec A] {
   def fromLong(a: Long): Int = a.toInt
   def fromFloat(a: Float): Int = a.toInt
   def fromDouble(a: Double): Int = a.toInt
-  /*def fromBigInt(a: BigInt): Int = a.toInt
-  def fromBigDecimal(a: BigDecimal): Int = a.toInt
-  def fromRational(a: Rational): Int = a.toBigInt.toInt
 
-  def fromType[B: ConvertableFrom](b: B): Int = ConvertableFrom[B].toInt(b)*/
 }
 
  trait ConvertableToLong extends ConvertableTo[Long] {
@@ -658,11 +632,7 @@ trait ConvertableTo[@spec A] {
   def fromLong(a: Long): Long = a
   def fromFloat(a: Float): Long = a.toLong
   def fromDouble(a: Double): Long = a.toLong
-  /*def fromBigInt(a: BigInt): Long = a.toLong
-  def fromBigDecimal(a: BigDecimal): Long = a.toLong
-  def fromRational(a: Rational): Long = a.toBigInt.toLong
 
-  def fromType[B: ConvertableFrom](b: B): Long = ConvertableFrom[B].toLong(b)*/
 }
 
  trait ConvertableToFloat extends ConvertableTo[Float] {
@@ -672,11 +642,7 @@ trait ConvertableTo[@spec A] {
   def fromLong(a: Long): Float = a.toFloat
   def fromFloat(a: Float): Float = a
   def fromDouble(a: Double): Float = a.toFloat
- /* def fromBigInt(a: BigInt): Float = a.toFloat
-  def fromBigDecimal(a: BigDecimal): Float = a.toFloat
-  def fromRational(a: Rational): Float = a.toBigDecimal.toFloat
 
-  def fromType[B: ConvertableFrom](b: B): Float = ConvertableFrom[B].toFloat(b)*/
 }
 
  trait ConvertableToDouble extends ConvertableTo[Double] {
@@ -686,112 +652,9 @@ trait ConvertableTo[@spec A] {
   def fromLong(a: Long): Double = a.toDouble
   def fromFloat(a: Float): Double = a.toDouble
   def fromDouble(a: Double): Double = a
-/*  def fromBigInt(a: BigInt): Double = a.toDouble
-  def fromBigDecimal(a: BigDecimal): Double = a.toDouble
-  def fromRational(a: Rational): Double = a.toBigDecimal.toDouble
 
-  def fromType[B: ConvertableFrom](b: B): Double = ConvertableFrom[B].toDouble(b)*/
-}
-/*
- trait ConvertableToBigInt extends ConvertableTo[BigInt] {
-  def fromByte(a: Byte): BigInt = BigInt(a)
-  def fromShort(a: Short): BigInt = BigInt(a)
-  def fromInt(a: Int): BigInt = BigInt(a)
-  def fromLong(a: Long): BigInt = BigInt(a)
-  def fromFloat(a: Float): BigInt = BigInt(a.toLong)
-  def fromDouble(a: Double): BigInt = BigInt(a.toLong)
-  def fromBigInt(a: BigInt): BigInt = a
-  def fromBigDecimal(a: BigDecimal): BigInt = a.toBigInt
-  def fromRational(a: Rational): BigInt = a.toBigInt
-
-  def fromType[B: ConvertableFrom](b: B): BigInt = ConvertableFrom[B].toBigInt(b)
 }
 
- trait ConvertableToBigDecimal extends ConvertableTo[BigDecimal] {
-  def fromByte(a: Byte): BigDecimal = BigDecimal(a)
-  def fromShort(a: Short): BigDecimal = BigDecimal(a)
-  def fromInt(a: Int): BigDecimal = BigDecimal(a)
-  def fromLong(a: Long): BigDecimal = BigDecimal(a)
-  def fromFloat(a: Float): BigDecimal = BigDecimal(a)
-  def fromDouble(a: Double): BigDecimal = BigDecimal(a)
-  def fromBigInt(a: BigInt): BigDecimal = BigDecimal(a)
-  def fromBigDecimal(a: BigDecimal): BigDecimal = a
-  def fromRational(a: Rational): BigDecimal = a.toBigDecimal
-
-  def fromType[B: ConvertableFrom](b: B): BigDecimal = ConvertableFrom[B].toBigDecimal(b)
-}
-
- trait ConvertableToRational extends ConvertableTo[Rational] {
-  def fromByte(a: Byte): Rational = Rational(a)
-  def fromShort(a: Short): Rational = Rational(a)
-  def fromInt(a: Int): Rational = Rational(a)
-  def fromLong(a: Long): Rational = Rational(a)
-  def fromFloat(a: Float): Rational = Rational(a)
-  def fromDouble(a: Double): Rational = Rational(a)
-  def fromBigInt(a: BigInt): Rational = Rational(a)
-  def fromBigDecimal(a: BigDecimal): Rational = Rational(a)
-  def fromRational(a: Rational) = a
-
-  def fromType[B: ConvertableFrom](b: B): Rational = ConvertableFrom[B].toRational(b)
-}
-
- trait ConvertableToAlgebraic extends ConvertableTo[Algebraic] {
-  def fromByte(a: Byte): Algebraic = Algebraic(a)
-  def fromShort(a: Short): Algebraic = Algebraic(a)
-  def fromInt(a: Int): Algebraic = Algebraic(a)
-  def fromLong(a: Long): Algebraic = Algebraic(a)
-  def fromFloat(a: Float): Algebraic = Algebraic(a)
-  def fromDouble(a: Double): Algebraic = Algebraic(a)
-  def fromBigInt(a: BigInt): Algebraic = Algebraic(a)
-  def fromBigDecimal(a: BigDecimal): Algebraic = Algebraic(a)
-  def fromRational(a: Rational) = Algebraic(a)
-
-  def fromType[B: ConvertableFrom](b: B): Algebraic = Algebraic(ConvertableFrom[B].toRational(b))
-}
-
-
- trait ConvertableToSafeLong extends ConvertableTo[SafeLong] {
-  def fromByte(a: Byte): SafeLong = SafeLong(a)
-  def fromShort(a: Short): SafeLong = SafeLong(a)
-  def fromInt(a: Int): SafeLong = SafeLong(a)
-  def fromLong(a: Long): SafeLong = SafeLong(a)
-  def fromFloat(a: Float): SafeLong = SafeLong(a.toLong)
-  def fromDouble(a: Double): SafeLong = SafeLong(a.toLong)
-  def fromBigInt(a: BigInt): SafeLong = SafeLong(a)
-  def fromBigDecimal(a: BigDecimal): SafeLong = SafeLong(a.toBigInt)
-  def fromRational(a: Rational): SafeLong = SafeLong(a.toBigInt)
-
-  def fromType[B: ConvertableFrom](b: B): SafeLong = SafeLong(ConvertableFrom[B].toBigInt(b))
-}
-
-trait ConvertableToNumber extends ConvertableTo[Number] {
-  def fromByte(a: Byte): Number = Number(a)
-  def fromShort(a: Short): Number = Number(a)
-  def fromInt(a: Int): Number = Number(a)
-  def fromLong(a: Long): Number = Number(a)
-  def fromFloat(a: Float): Number = Number(a)
-  def fromDouble(a: Double): Number = Number(a)
-  def fromBigInt(a: BigInt): Number = Number(a)
-  def fromBigDecimal(a: BigDecimal): Number = Number(a)
-  def fromRational(a: Rational): Number = Number(a)
-
-  def fromType[B: ConvertableFrom](b: B): Number = Number(ConvertableFrom[B].toDouble(b))
-}
-
- trait ConvertableToNatural extends ConvertableTo[Natural] {
-  def fromByte(a: Byte): Natural = Natural(a)
-  def fromShort(a: Short): Natural = Natural(a)
-  def fromInt(a: Int): Natural = Natural(a)
-  def fromLong(a: Long): Natural = Natural(a)
-  def fromFloat(a: Float): Natural = Natural(BigDecimal(a).toBigInt)
-  def fromDouble(a: Double): Natural = Natural(BigDecimal(a).toBigInt)
-  def fromBigInt(a: BigInt): Natural = Natural(a)
-  def fromBigDecimal(a: BigDecimal): Natural = Natural(a.toBigInt)
-  def fromRational(a: Rational): Natural = Natural(a.toBigInt)
-
-  def fromType[B: ConvertableFrom](b: B): Natural = Natural(ConvertableFrom[B].toBigInt(b))
-}
-*/
 object ConvertableTo {
   @inline final def apply[A](implicit ev: ConvertableTo[A]) = ev
 
@@ -801,32 +664,18 @@ object ConvertableTo {
   implicit final val ConvertableToFloat = new ConvertableToFloat {}
   implicit final val ConvertableToLong = new ConvertableToLong {}
   implicit final val ConvertableToDouble = new ConvertableToDouble {}
-  /*implicit final val ConvertableToBigInt = new ConvertableToBigInt {}
-  implicit final val ConvertableToBigDecimal = new ConvertableToBigDecimal {}
-  implicit final val ConvertableToRational = new ConvertableToRational {}
-  implicit final val ConvertableToAlgebraic = new ConvertableToAlgebraic {}
-  implicit final val ConvertableToSafeLong = new ConvertableToSafeLong {}
-  implicit final val ConvertableToNumber = new ConvertableToNumber {}
-  implicit final val ConvertableToNatural = new ConvertableToNatural {}
-*/
+ 
  
 }
 
-trait ConvertableFrom[@spec A] {
+trait ConvertableFrom[@miniboxed A] {
   def toByte(a: A): Byte
   def toShort(a: A): Short
   def toInt(a: A): Int
   def toLong(a: A): Long
   def toFloat(a: A): Float
   def toDouble(a: A): Double
-  /*
-  def toBigInt(a: A): BigInt
-  def toBigDecimal(a: A): BigDecimal
-  def toRational(a: A): Rational
-  def toNumber(a: A): Number
 
-  def toType[B: ConvertableTo](a: A): B
-  def toString(a: A): String*/
 }
 
  trait ConvertableFromByte extends ConvertableFrom[Byte] {
@@ -836,13 +685,7 @@ trait ConvertableFrom[@spec A] {
   def toLong(a: Byte): Long = a.toLong
   def toFloat(a: Byte): Float = a.toFloat
   def toDouble(a: Byte): Double = a.toDouble
-  /*def toBigInt(a: Byte): BigInt = BigInt(a)
-  def toBigDecimal(a: Byte): BigDecimal = BigDecimal(a)
-  def toRational(a: Byte): Rational = Rational(a)
-  def toNumber(a: Byte): Number = Number(a)
 
-  def toType[B: ConvertableTo](a: Byte): B = ConvertableTo[B].fromByte(a)
-  def toString(a: Byte): String = a.toString*/
 }
 
  trait ConvertableFromShort extends ConvertableFrom[Short] {
@@ -852,13 +695,7 @@ trait ConvertableFrom[@spec A] {
   def toLong(a: Short): Long = a.toLong
   def toFloat(a: Short): Float = a.toFloat
   def toDouble(a: Short): Double = a.toDouble
-  /*def toBigInt(a: Short): BigInt = BigInt(a)
-  def toBigDecimal(a: Short): BigDecimal = BigDecimal(a)
-  def toRational(a: Short): Rational = Rational(a)
-  def toNumber(a: Short): Number = Number(a)
 
-  def toType[B: ConvertableTo](a: Short): B = ConvertableTo[B].fromShort(a)
-  def toString(a: Short): String = a.toString*/
 }
 
  trait ConvertableFromInt extends ConvertableFrom[Int] {
@@ -868,13 +705,7 @@ trait ConvertableFrom[@spec A] {
   def toLong(a: Int): Long = a.toLong
   def toFloat(a: Int): Float = a.toFloat
   def toDouble(a: Int): Double = a.toDouble
- /* def toBigInt(a: Int): BigInt = BigInt(a)
-  def toBigDecimal(a: Int): BigDecimal = BigDecimal(a)
-  def toRational(a: Int): Rational = Rational(a)
-  def toNumber(a: Int): Number = Number(a)
 
-  def toType[B: ConvertableTo](a: Int): B = ConvertableTo[B].fromInt(a)
-  def toString(a: Int): String = a.toString*/
 }
 
 trait ConvertableFromLong extends ConvertableFrom[Long] {
@@ -884,13 +715,7 @@ trait ConvertableFromLong extends ConvertableFrom[Long] {
   def toLong(a: Long): Long = a
   def toFloat(a: Long): Float = a.toFloat
   def toDouble(a: Long): Double = a.toDouble
- /* def toBigInt(a: Long): BigInt = BigInt(a)
-  def toBigDecimal(a: Long): BigDecimal = BigDecimal(a)
-  def toRational(a: Long): Rational = Rational(a)
-  def toNumber(a: Long): Number = Number(a)
 
-  def toType[B: ConvertableTo](a: Long): B = ConvertableTo[B].fromLong(a)
-  def toString(a: Long): String = a.toString*/
 }
 
 trait ConvertableFromFloat extends ConvertableFrom[Float] {
@@ -900,13 +725,7 @@ trait ConvertableFromFloat extends ConvertableFrom[Float] {
   def toLong(a: Float): Long = a.toLong
   def toFloat(a: Float): Float = a
   def toDouble(a: Float): Double = a.toDouble
-  /*def toBigInt(a: Float): BigInt = BigInt(a.toLong)
-  def toBigDecimal(a: Float): BigDecimal = BigDecimal(a)
-  def toRational(a: Float): Rational = Rational(a)
-  def toNumber(a: Float): Number = Number(a)
 
-  def toType[B: ConvertableTo](a: Float): B = ConvertableTo[B].fromFloat(a)
-  def toString(a: Float): String = a.toString*/
 }
 
 trait ConvertableFromDouble extends ConvertableFrom[Double] {
@@ -916,147 +735,9 @@ trait ConvertableFromDouble extends ConvertableFrom[Double] {
   def toLong(a: Double): Long = a.toLong
   def toFloat(a: Double): Float = a.toFloat
   def toDouble(a: Double): Double = a
-  /*def toBigInt(a: Double): BigInt = BigInt(a.toLong)
-  def toBigDecimal(a: Double): BigDecimal = BigDecimal(a)
-  def toRational(a: Double): Rational = Rational(a)
-  def toNumber(a: Double): Number = Number(a)
-
-  def toType[B: ConvertableTo](a: Double): B = ConvertableTo[B].fromDouble(a)
-  def toString(a: Double): String = a.toString*/
-}
-/*
-trait ConvertableFromBigInt extends ConvertableFrom[BigInt] {
-  def toByte(a: BigInt): Byte = a.toByte
-  def toShort(a: BigInt): Short = a.toShort
-  def toInt(a: BigInt): Int = a.toInt
-  def toLong(a: BigInt): Long = a.toLong
-  def toFloat(a: BigInt): Float = a.toFloat
-  def toDouble(a: BigInt): Double = a.toDouble
-  def toBigInt(a: BigInt): BigInt = a
-  def toBigDecimal(a: BigInt): BigDecimal = BigDecimal(a)
-  def toRational(a: BigInt): Rational = Rational(a)
-  def toNumber(a: BigInt): Number = Number(a)
-
-  def toType[B: ConvertableTo](a: BigInt): B = ConvertableTo[B].fromBigInt(a)
-  def toString(a: BigInt): String = a.toString
+ 
 }
 
-trait ConvertableFromBigDecimal extends ConvertableFrom[BigDecimal] {
-  def toByte(a: BigDecimal): Byte = a.toByte
-  def toShort(a: BigDecimal): Short = a.toShort
-  def toInt(a: BigDecimal): Int = a.toInt
-  def toLong(a: BigDecimal): Long = a.toLong
-  def toFloat(a: BigDecimal): Float = a.toFloat
-  def toDouble(a: BigDecimal): Double = a.toDouble
-  def toBigInt(a: BigDecimal): BigInt = a.toBigInt
-  def toBigDecimal(a: BigDecimal): BigDecimal = a
-  def toRational(a: BigDecimal): Rational = Rational(a)
-  def toNumber(a: BigDecimal): Number = Number(a)
-
-  def toType[B: ConvertableTo](a: BigDecimal): B = ConvertableTo[B].fromBigDecimal(a)
-  def toString(a: BigDecimal): String = a.toString
-}
-
-trait ConvertableFromRational extends ConvertableFrom[Rational] {
-  def toByte(a: Rational): Byte = a.toBigInt.toByte
-  def toShort(a: Rational): Short = a.toBigInt.toShort
-  def toInt(a: Rational): Int = a.toBigInt.toInt
-  def toLong(a: Rational): Long = a.toBigInt.toLong
-  def toFloat(a: Rational): Float = a.toBigDecimal.toFloat
-  def toDouble(a: Rational): Double = a.toBigDecimal.toDouble
-  def toBigInt(a: Rational): BigInt = a.toBigInt
-  def toBigDecimal(a: Rational): BigDecimal = a.toBigDecimal
-  def toRational(a: Rational): Rational = a
-  def toNumber(a: Rational): Number = Number(a.toBigDecimal)
-
-  def toType[B: ConvertableTo](a: Rational): B = ConvertableTo[B].fromRational(a)
-  def toString(a: Rational): String = a.toString
-}
-
-trait ConvertableFromAlgebraic extends ConvertableFrom[Algebraic] {
-  def toByte(a: Algebraic): Byte = a.toInt.toByte
-  def toShort(a: Algebraic): Short = a.toInt.toShort
-  def toInt(a: Algebraic): Int = a.toInt
-  def toLong(a: Algebraic): Long = a.toLong
-  def toFloat(a: Algebraic): Float = a.toDouble.toFloat
-  def toDouble(a: Algebraic): Double = a.toDouble
-  def toBigInt(a: Algebraic): BigInt = a.toBigInt
-  // TODO: Figure out how to deal with variable approximability.
-  def toBigDecimal(a: Algebraic): BigDecimal = a.toBigDecimal(java.math.MathContext.DECIMAL128)
-  def toRational(a: Algebraic): Rational = a.toRational(ApproximationContext(Rational(1L, 100000000000000000L)))
-  def toNumber(a: Algebraic): Number = Number(toBigDecimal(a))
-
-  def toType[B: ConvertableTo](a: Algebraic): B = ConvertableTo[B].fromRational(a.toRational)
-  def toString(a: Algebraic): String = a.toString
-}
-
-trait ConvertableFromComplex[A] extends ConvertableFrom[Complex[A]] {
-  def algebra: Integral[A]
-
-  def toByte(a: Complex[A]): Byte = algebra.toByte(a.real)
-  def toShort(a: Complex[A]): Short = algebra.toShort(a.real)
-  def toInt(a: Complex[A]): Int = algebra.toInt(a.real)
-  def toLong(a: Complex[A]): Long = algebra.toLong(a.real)
-  def toFloat(a: Complex[A]): Float = algebra.toFloat(a.real)
-  def toDouble(a: Complex[A]): Double = algebra.toDouble(a.real)
-  def toBigInt(a: Complex[A]): BigInt = algebra.toBigInt(a.real)
-  def toBigDecimal(a: Complex[A]): BigDecimal = algebra.toBigDecimal(a.real)
-  def toRational(a: Complex[A]): Rational = algebra.toRational(a.real)
-  def toNumber(a: Complex[A]): Number = algebra.toNumber(a.real)
-
-  def toType[B: ConvertableTo](a: Complex[A]): B = sys.error("fixme")
-  def toString(a: Complex[A]): String = a.toString
-}
-
-trait ConvertableFromSafeLong extends ConvertableFrom[SafeLong] {
-  def toByte(a: SafeLong): Byte = a.toBigInt.toByte
-  def toShort(a: SafeLong): Short = a.toBigInt.toShort
-  def toInt(a: SafeLong): Int = a.toBigInt.toInt
-  def toLong(a: SafeLong): Long = a.toBigInt.toLong
-  def toFloat(a: SafeLong): Float = a.toBigInt.toFloat
-  def toDouble(a: SafeLong): Double = a.toBigInt.toDouble
-  def toBigInt(a: SafeLong): BigInt = a.toBigInt
-  def toBigDecimal(a: SafeLong): BigDecimal = BigDecimal(a.toBigInt)
-  def toRational(a: SafeLong): Rational = Rational(a.toBigInt)
-  def toNumber(a: SafeLong): Number = Number(a)
-
-  def toType[B: ConvertableTo](a: SafeLong): B = ConvertableTo[B].fromBigInt(a.toBigInt)
-  def toString(a: SafeLong): String = a.toString
-}
-
-trait ConvertableFromNumber extends ConvertableFrom[Number] {
-  def toByte(a: Number): Byte = a.toBigInt.toByte
-  def toShort(a: Number): Short = a.toBigInt.toShort
-  def toInt(a: Number): Int = a.toBigInt.toInt
-  def toLong(a: Number): Long = a.toBigInt.toLong
-  def toFloat(a: Number): Float = a.toBigInt.toFloat
-  def toDouble(a: Number): Double = a.toBigInt.toDouble
-  def toBigInt(a: Number): BigInt = a.toBigInt
-  def toBigDecimal(a: Number): BigDecimal = BigDecimal(a.toBigInt)
-  def toRational(a: Number): Rational = Rational(a.toBigInt)
-  def toNumber(a: Number): Number = a
-
-  def toType[B: ConvertableTo](a: Number): B = ConvertableTo[B].fromBigInt(a.toBigInt)
-  def toString(a: Number): String = a.toString
-}
-
-trait ConvertableFromNatural extends ConvertableFrom[Natural] {
-  def toByte(a: Natural): Byte = a.toBigInt.toByte
-  def toShort(a: Natural): Short = a.toBigInt.toShort
-  def toInt(a: Natural): Int = a.toBigInt.toInt
-  def toLong(a: Natural): Long = a.toBigInt.toLong
-  def toFloat(a: Natural): Float = a.toBigInt.toFloat
-  def toDouble(a: Natural): Double = a.toBigInt.toDouble
-  def toBigInt(a: Natural): BigInt = a.toBigInt
-  def toBigDecimal(a: Natural): BigDecimal = BigDecimal(a.toBigInt)
-  def toRational(a: Natural): Rational = Rational(a.toBigInt)
-  def toNumber(a: Natural): Number = Number(a.toBigInt)
-
-  def toType[B: ConvertableTo](a: Natural): B = ConvertableTo[B].fromBigInt(a.toBigInt)
-  def toString(a: Natural): String = a.toString
-}
-
-*/
 object ConvertableFrom {
   @inline final def apply[A](implicit ev: ConvertableFrom[A]) = ev
 
@@ -1066,14 +747,7 @@ object ConvertableFrom {
   implicit final val ConvertableFromLong = new ConvertableFromLong {}
   implicit final val ConvertableFromFloat = new ConvertableFromFloat {}
   implicit final val ConvertableFromDouble = new ConvertableFromDouble {}
-  /*implicit final val ConvertableFromBigInt = new ConvertableFromBigInt {}
-  implicit final val ConvertableFromBigDecimal = new ConvertableFromBigDecimal {}
-  implicit final val ConvertableFromRational = new ConvertableFromRational {}
-  implicit final val ConvertableFromAlgebraic = new ConvertableFromAlgebraic {}
-  implicit final val ConvertableFromSafeLong = new ConvertableFromSafeLong {}
-  implicit final val ConvertableFromNumber = new ConvertableFromNumber {}
-  implicit final val ConvertableFromNatural = new ConvertableFromNatural {}*/
-
+  
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -1082,7 +756,7 @@ object ConvertableFrom {
 
 
 //Ring
-trait Ring[@spec(Byte, Short, Int, Long, Float, Double) A] extends Rig[A] with Rng[A] {
+trait Ring[@miniboxed A] extends Rig[A] with Rng[A] {
   def fromInt(n: Int): A = additive.sumn(one, n)
 }
 
@@ -1090,7 +764,7 @@ object Ring {
   @inline final def apply[A](implicit r: Ring[A]): Ring[A] = r
 }
 
-trait CRing[@spec(Byte, Short, Int, Long, Float, Double) A] extends Ring[A] with MultiplicativeCMonoid[A]
+trait CRing[@miniboxed A] extends Ring[A] with MultiplicativeCMonoid[A]
 
 object CRing {
   @inline final def apply[A](implicit r: CRing[A]): CRing[A] = r
@@ -1098,7 +772,7 @@ object CRing {
 
 
 //Rig
-trait Rig[@spec(Byte, Short, Int, Long, Float, Double) A] extends Semiring[A] with AdditiveMonoid[A] with MultiplicativeMonoid[A] {
+trait Rig[@miniboxed A] extends Semiring[A] with AdditiveMonoid[A] with MultiplicativeMonoid[A] {
   override def pow(a:A, n:Int):A =
     if (n >= 0) multiplicative.sumn(a, n)
     else throw new IllegalArgumentException(s"Illegal negative exponent $n to Monoid#pow")
@@ -1110,7 +784,7 @@ object Rig {
 
 //Rng
 
-trait Rng[@spec(Byte, Short, Int, Long, Float, Double) A] extends Semiring[A] with AdditiveAbGroup[A]
+trait Rng[@miniboxed A] extends Semiring[A] with AdditiveAbGroup[A]
 
 object Rng {
   @inline final def apply[A](implicit r:Rng[A]):Rng[A] = r
@@ -1118,7 +792,7 @@ object Rng {
 
 //Semiring
 
-trait Semiring[@spec(Byte, Short, Int, Long, Float, Double) A] extends AdditiveMonoid[A] with MultiplicativeSemigroup[A] {
+trait Semiring[@miniboxed A] extends AdditiveMonoid[A] with MultiplicativeSemigroup[A] {
   def pow(a:A, n:Int):A =
     if (n > 0) multiplicative.sumn(a, n)
     else throw new IllegalArgumentException(s"Illegal non-positive exponent $n to Semiring#pow")
@@ -1131,7 +805,7 @@ object Semiring {
 // EuclideanRing
 
 
-trait EuclideanRing[@spec(Byte, Short, Int, Long, Float, Double) A] extends CRing[A] {
+trait EuclideanRing[@miniboxed A] extends CRing[A] {
   def quot(a: A, b: A): A
   def mod(a: A, b: A): A
   def quotmod(a: A, b: A): (A, A) = (quot(a, b), mod(a, b))
@@ -1187,7 +861,7 @@ object Additive {
   }
 }
 
-trait AdditiveSemigroup[@spec(Byte, Short, Int, Long, Float, Double) A] {
+trait AdditiveSemigroup[@miniboxed A] {
   def additive: Semigroup[A] = new Semigroup[A] {
     def op(x: A, y: A): A = plus(x, y)
   }
@@ -1195,13 +869,13 @@ trait AdditiveSemigroup[@spec(Byte, Short, Int, Long, Float, Double) A] {
   def plus(x: A, y: A): A
 }
 
-trait AdditiveCSemigroup[@spec(Byte, Short, Int, Long, Float, Double) A] extends AdditiveSemigroup[A] {
+trait AdditiveCSemigroup[@miniboxed A] extends AdditiveSemigroup[A] {
   override def additive: CSemigroup[A] = new CSemigroup[A] {
     def op(x: A, y: A): A = plus(x, y)
   }
 }
 
-trait AdditiveMonoid[@spec(Byte, Short, Int, Long, Float, Double) A] extends AdditiveSemigroup[A] {
+trait AdditiveMonoid[@miniboxed A] extends AdditiveSemigroup[A] {
   override def additive: Monoid[A] = new Monoid[A] {
     def id = zero
     def op(x: A, y: A): A = plus(x, y)
@@ -1210,14 +884,14 @@ trait AdditiveMonoid[@spec(Byte, Short, Int, Long, Float, Double) A] extends Add
   def zero: A
 }
 
-trait AdditiveCMonoid[@spec(Byte, Short, Int, Long, Float, Double) A] extends AdditiveMonoid[A] with AdditiveCSemigroup[A] {
+trait AdditiveCMonoid[@miniboxed A] extends AdditiveMonoid[A] with AdditiveCSemigroup[A] {
   override def additive: CMonoid[A] = new CMonoid[A] {
     def id = zero
     def op(x: A, y: A): A = plus(x, y)
   }
 }
 
-trait AdditiveGroup[@spec(Byte, Short, Int, Long, Float, Double) A] extends AdditiveMonoid[A] {
+trait AdditiveGroup[@miniboxed A] extends AdditiveMonoid[A] {
   override def additive: Group[A] = new Group[A] {
     def id = zero
     def op(x: A, y: A): A = plus(x, y)
@@ -1228,7 +902,7 @@ trait AdditiveGroup[@spec(Byte, Short, Int, Long, Float, Double) A] extends Addi
   def minus(x: A, y: A): A = plus(x, negate(y))
 }
 
-trait AdditiveAbGroup[@spec(Byte, Short, Int, Long, Float, Double) A] extends AdditiveGroup[A] with AdditiveCMonoid[A] {
+trait AdditiveAbGroup[@miniboxed A] extends AdditiveGroup[A] with AdditiveCMonoid[A] {
   override def additive: AbGroup[A] = new AbGroup[A] {
     def id = zero
     def op(x: A, y: A): A = plus(x, y)
@@ -1240,7 +914,7 @@ trait AdditiveAbGroup[@spec(Byte, Short, Int, Long, Float, Double) A] extends Ad
 //Semigroup
 
 
-trait Semigroup[@spec(Boolean, Byte, Short, Int, Long, Float, Double) A] {
+trait Semigroup[@miniboxed A] {
   def op(x: A, y: A): A
 
  
@@ -1274,7 +948,7 @@ object Semigroup {
   @inline final def multiplicative[A](implicit A: MultiplicativeSemigroup[A]) = A.multiplicative
 }
 
-trait CSemigroup[@spec(Boolean, Byte, Short, Int, Long, Float, Double) A]
+trait CSemigroup[@miniboxed A]
     extends Semigroup[A]
 
 object CSemigroup {
@@ -1288,7 +962,7 @@ object CSemigroup {
 
 //Monoid
 
-trait Monoid[@spec(Boolean, Byte, Short, Int, Long, Float, Double) A]
+trait Monoid[@miniboxed A]
     extends Semigroup[A] {
   def id: A
   override def sumn(a: A, n: Int): A =
@@ -1306,7 +980,7 @@ object Monoid {
 
 }
 
-trait CMonoid[@spec(Boolean, Byte, Short, Int, Long, Float, Double) A]
+trait CMonoid[@miniboxed A]
     extends Monoid[A] with CSemigroup[A]
 
 object CMonoid {
@@ -1319,7 +993,7 @@ object CMonoid {
 
 //Group
 
-trait Group[@spec(Byte, Short, Int, Long, Float, Double) A]
+trait Group[@miniboxed A]
     extends Monoid[A] {
 
   def inverse(a: A): A
@@ -1341,7 +1015,7 @@ object Group {
 }
 
 
-trait AbGroup[@spec(Byte, Short, Int, Long, Float, Double) A]
+trait AbGroup[@miniboxed A]
     extends Group[A] with CMonoid[A]
 
 object AbGroup {
@@ -1390,7 +1064,7 @@ object Multiplicative {
   }
 }
 
-trait MultiplicativeSemigroup[@spec(Byte, Short, Int, Long, Float, Double) A] {
+trait MultiplicativeSemigroup[@miniboxed A] {
   def multiplicative: Semigroup[A] = new Semigroup[A] {
     def op(x: A, y: A): A = times(x, y)
   }
@@ -1398,13 +1072,13 @@ trait MultiplicativeSemigroup[@spec(Byte, Short, Int, Long, Float, Double) A] {
   def times(x: A, y: A): A
 }
 
-trait MultiplicativeCSemigroup[@spec(Byte, Short, Int, Long, Float, Double) A] extends MultiplicativeSemigroup[A] {
+trait MultiplicativeCSemigroup[@miniboxed A] extends MultiplicativeSemigroup[A] {
   override def multiplicative: CSemigroup[A] = new CSemigroup[A] {
     def op(x: A, y: A): A = times(x, y)
   }
 }
 
-trait MultiplicativeMonoid[@spec(Byte, Short, Int, Long, Float, Double) A] extends MultiplicativeSemigroup[A] {
+trait MultiplicativeMonoid[@miniboxed A] extends MultiplicativeSemigroup[A] {
   override def multiplicative: Monoid[A] = new Monoid[A] {
     def id = one
     def op(x: A, y: A): A = times(x, y)
@@ -1413,14 +1087,14 @@ trait MultiplicativeMonoid[@spec(Byte, Short, Int, Long, Float, Double) A] exten
   def one: A
 }
 
-trait MultiplicativeCMonoid[@spec(Byte, Short, Int, Long, Float, Double) A] extends MultiplicativeMonoid[A] with MultiplicativeCSemigroup[A] {
+trait MultiplicativeCMonoid[@miniboxed A] extends MultiplicativeMonoid[A] with MultiplicativeCSemigroup[A] {
   override def multiplicative: CMonoid[A] = new CMonoid[A] {
     def id = one
     def op(x: A, y: A): A = times(x, y)
   }
 }
 
-trait MultiplicativeGroup[@spec(Byte, Short, Int, Long, Float, Double) A] extends MultiplicativeMonoid[A] {
+trait MultiplicativeGroup[@miniboxed A] extends MultiplicativeMonoid[A] {
   override def multiplicative: Group[A] = new Group[A] {
     def id = one
     def op(x: A, y: A): A = times(x, y)
@@ -1431,7 +1105,7 @@ trait MultiplicativeGroup[@spec(Byte, Short, Int, Long, Float, Double) A] extend
   def div(x: A, y: A): A
 }
 
-trait MultiplicativeAbGroup[@spec(Byte, Short, Int, Long, Float, Double) A] extends MultiplicativeGroup[A] with MultiplicativeCMonoid[A] {
+trait MultiplicativeAbGroup[@miniboxed A] extends MultiplicativeGroup[A] with MultiplicativeCMonoid[A] {
   override def multiplicative: AbGroup[A] = new AbGroup[A] {
     def id = one
     def op(x: A, y: A): A = times(x, y)
@@ -1443,14 +1117,14 @@ trait MultiplicativeAbGroup[@spec(Byte, Short, Int, Long, Float, Double) A] exte
 
 //NRoot
 
-trait NRoot[@spec(Double,Float,Int,Long) A] {
+trait NRoot[@miniboxed A] {
   def nroot(a: A, n: Int): A
   def sqrt(a: A): A = nroot(a, 2)
   def fpow(a:A, b:A): A
 }
 
 object NRoot {
-  @inline final def apply[@spec(Int,Long,Float,Double) A](implicit ev:NRoot[A]) = ev
+  @inline final def apply[@miniboxed A](implicit ev:NRoot[A]) = ev
 
   private def intSearch(f: Int => Boolean): Int = {
     val ceil = (0 until 32) find (i => !f(1 << i)) getOrElse 33
@@ -1536,7 +1210,7 @@ object NRoot {
 /**
  * A simple type class for numeric types that are a subset of the reals.
  */
-trait IsReal[@spec A] extends Order[A] with Signed[A] {
+trait IsReal[@miniboxed A] extends Order[A] with Signed[A] {
   def ceil(a: A): A
   def floor(a: A): A
   def round(a: A): A
@@ -1544,7 +1218,7 @@ trait IsReal[@spec A] extends Order[A] with Signed[A] {
   def toDouble(a: A): Double
 }
 
-trait IsIntegral[@spec(Byte,Short,Int,Long) A] extends IsReal[A] {
+trait IsIntegral[@miniboxed A] extends IsReal[A] {
   def ceil(a: A): A = a
   def floor(a: A): A = a
   def round(a: A): A = a
@@ -1552,14 +1226,14 @@ trait IsIntegral[@spec(Byte,Short,Int,Long) A] extends IsReal[A] {
 }
 
 object IsReal {
-  def apply[@spec A](implicit A: IsReal[A]): IsReal[A] = A
+  def apply[@miniboxed A](implicit A: IsReal[A]): IsReal[A] = A
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 
 //Order
 
-trait Order[@spec A] extends Eq[A] {
+trait Order[@miniboxed A] extends Eq[A] {
   self =>
 
   def eqv(x: A, y: A): Boolean = compare(x, y) == 0
@@ -1572,25 +1246,25 @@ trait Order[@spec A] extends Eq[A] {
   def max(x: A, y: A): A = if (gt(x, y)) x else y
   def compare(x: A, y: A): Int
 
-  override def on[@spec B](f: B => A): Order[B] = new MappedOrder(this)(f)
+  override def on[@miniboxed B](f: B => A): Order[B] = new MappedOrder(this)(f)
 
   def reverse: Order[A] = new ReversedOrder(this)
 }
 
-private class MappedOrder[@spec A, @spec B](order: Order[B])(f: A => B) extends Order[A] {
+private class MappedOrder[@miniboxed A, @miniboxed B](order: Order[B])(f: A => B) extends Order[A] {
   def compare(x: A, y: A) = order.compare(f(x), f(y))
 }
 
-private class ReversedOrder[@spec A](order: Order[A]) extends Order[A] {
+private class ReversedOrder[@miniboxed A](order: Order[A]) extends Order[A] {
   def compare(x: A, y: A) = order.compare(y, x)
 }
 
 object Order {
   @inline final def apply[A](implicit o: Order[A]) = o
 
-  def by[@spec A, @spec B](f: A => B)(implicit o: Order[B]): Order[A] = o.on(f)
+  def by[@miniboxed A, @miniboxed B](f: A => B)(implicit o: Order[B]): Order[A] = o.on(f)
 
-  def from[@spec A](f: (A, A) => Int): Order[A] = new Order[A] {
+  def from[@miniboxed A](f: (A, A) => Int): Order[A] = new Order[A] {
     def compare(x: A, y: A) = f(x, y)
   }
 
@@ -1605,7 +1279,7 @@ object Order {
 
 //Signed
 
-trait Signed[@spec(Double, Float, Int, Long) A] {
+trait Signed[@miniboxed A] {
   def sign(a: A): Sign = Sign(signum(a))  
   
   def signum(a: A): Int
@@ -1669,22 +1343,22 @@ object Sign {
 
 //Eq
 
-trait Eq[@spec A] {
+trait Eq[@miniboxed A] {
   def eqv(x:A, y:A): Boolean
 
   def neqv(x:A, y:A): Boolean = !eqv(x, y)
 
-  def on[@spec B](f:B => A): Eq[B] = new MappedEq(this)(f)
+  def on[@miniboxed B](f:B => A): Eq[B] = new MappedEq(this)(f)
 }
 
-private class MappedEq[@spec A, @spec B](eq: Eq[B])(f: A => B) extends Eq[A] {
+private class MappedEq[@miniboxed A, @miniboxed B](eq: Eq[B])(f: A => B) extends Eq[A] {
   def eqv(x: A, y: A): Boolean = eq.eqv(f(x), f(x))
 }
 
 object Eq {
   def apply[A](implicit e:Eq[A]):Eq[A] = e
 
-  def by[@spec A, @spec B](f:A => B)(implicit e:Eq[B]): Eq[A] = new MappedEq(e)(f)
+  def by[@miniboxed A, @miniboxed B](f:A => B)(implicit e:Eq[B]): Eq[A] = new MappedEq(e)(f)
 }
 
 
@@ -1825,7 +1499,7 @@ package object math {
 //Field
 
 
-trait Field[@spec(Byte, Short, Int, Long, Float, Double) A] extends EuclideanRing[A] with MultiplicativeAbGroup[A] {
+trait Field[@miniboxed A] extends EuclideanRing[A] with MultiplicativeAbGroup[A] {
 
   /**
    * This is implemented in terms of basic Field ops. However, this is
@@ -1870,7 +1544,7 @@ object Field {
 
 //Trig
 
-trait Trig[@spec(Float, Double) A] {
+trait Trig[@miniboxed A] {
   def e: A
   def pi: A
 
@@ -1903,7 +1577,7 @@ object Trig {
 
 //Complex and FastComplex
 
-final case class Complex[@spec(Float, Double) T](real: T, imag: T)
+final case class Complex[@miniboxed T](real: T, imag: T)
    
 object FastComplex {
   final def apply(real: Float, imag: Float) = encode(real, imag)
@@ -1924,7 +1598,7 @@ object FastComplex {
 object ArraySupport {
  
   
-  def plus[@spec(Int, Long, Float, Double) A: ClassTag: AdditiveMonoid](x: Array[A], y: Array[A]): Array[A] = {
+  def plus[@miniboxed A: ClassTag: AdditiveMonoid](x: Array[A], y: Array[A]): Array[A] = {
    
     val z = new Array[A](math.max(x.length, y.length))
     var i = 0
@@ -1934,12 +1608,4 @@ object ArraySupport {
     z
   }
 }
-/*
-//////////////////////////////////////////////////////////////////////////////////////
-
-//AdditiveSemigroupOps for infering + operation on generic values
-final class AdditiveSemigroupOps[A](lhs:A)(implicit ev:AdditiveSemigroup[A]) {
-  def +(rhs:A): A = macro Ops.binop[A, A]
-}
-*/
 
