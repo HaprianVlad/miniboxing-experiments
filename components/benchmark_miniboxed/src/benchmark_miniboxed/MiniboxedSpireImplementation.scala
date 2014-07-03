@@ -1,6 +1,5 @@
 package benckmark_miniboxed
 
-
 import scala.reflect.ClassTag
 import scala.language.implicitConversions
 
@@ -1592,4 +1591,3 @@ object ArraySupport {
     z
   }
 }
-

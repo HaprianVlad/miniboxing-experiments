@@ -1,4 +1,4 @@
-package benchmark_generic
+package benckmark_generic
 
 import scala.reflect.ClassTag
 import scala.util.Random._
@@ -77,7 +77,7 @@ trait BenchmarkData extends MyBenchmark {
 
 /*******************************************************************************************/
 
-//GENERIC SPIRE IMPLEMENTATION
+//MINIBOXED SPIRE IMPLEMENTATION
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 

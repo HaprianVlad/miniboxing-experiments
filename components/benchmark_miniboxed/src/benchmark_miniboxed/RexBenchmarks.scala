@@ -6,8 +6,10 @@ import scala.util.Random._
 import com.google.caliper.Runner
 import com.google.caliper.SimpleBenchmark
 import com.google.caliper.Param
+import scala.annotation.tailrec
 
-// Rex BENCHMARK
+
+// REX BENCHMARK
 
 object RexBenchmarks extends MyRunner(classOf[RexBenchmarks])
 
@@ -118,3 +120,6 @@ class RexBenchmarks extends MyBenchmark with BenchmarkData {
    
   }
 }
+
+
+

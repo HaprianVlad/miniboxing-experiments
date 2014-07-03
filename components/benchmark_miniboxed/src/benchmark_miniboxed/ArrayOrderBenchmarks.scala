@@ -94,3 +94,5 @@ class ArrayOrderBenchmarks extends MyBenchmark {
   def timeAddIndirect(reps: Int) = run(reps) { indirectAdd(a, b) }
   def timeAddDirect(reps: Int) = run(reps) { directAdd(a, b) }
 }
+
+

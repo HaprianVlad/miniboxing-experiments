@@ -1,14 +1,14 @@
 package benchmark_generic
 
-
 import scala.annotation.tailrec
 import scala.reflect.ClassTag
+
 import scala.util.Random
 import Random._
-import com.google.caliper.Runner
+
+import com.google.caliper.Runner 
 import com.google.caliper.SimpleBenchmark
 import com.google.caliper.Param
-
 
 object ArrayOrderBenchmarks extends MyRunner(classOf[ArrayOrderBenchmarks])
 
@@ -70,8 +70,7 @@ class ArrayOrderBenchmarks extends MyBenchmark {
     x.length - y.length
   }
 
- 
-  def indirectAdd[@miniboxed A: ClassTag: Ring](x: Array[A], y: Array[A]): Array[A] =
+  def indirectAdd[ A: ClassTag: Ring](x: Array[A], y: Array[A]): Array[A] =
    ArraySupport.plus(x, y)
 
   def directAdd(x: Array[Int], y: Array[Int]): Array[Int] = {
