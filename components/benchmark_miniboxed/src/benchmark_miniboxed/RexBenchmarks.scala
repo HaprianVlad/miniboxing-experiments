@@ -9,7 +9,7 @@ import com.google.caliper.Param
 import scala.annotation.tailrec
 
 
-// REX BENCHMARK
+// REX BENCHMARK MINIBOXED
 
 object RexBenchmarks extends MyRunner(classOf[RexBenchmarks])
 

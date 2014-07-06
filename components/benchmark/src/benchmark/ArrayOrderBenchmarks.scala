@@ -93,8 +93,8 @@ class ArrayOrderBenchmarks extends MyBenchmark {
   // def timeCompareDirect(reps: Int) = run(reps) { directCompare(a, b) }
 
   
-  //TODO: FIX THE BUG of + operation
-  //def timeAddGeneric(reps: Int) = run(reps) {  a  +  b }
+ // TODO: I replaced + with ++ in timeAddGeneric, see if something is changed
+  def timeAddGeneric(reps: Int) = run(reps) {  a  ++  b }
   def timeAddIndirect(reps: Int) = run(reps) { indirectAdd(a, b) }
   def timeAddDirect(reps: Int) = run(reps) { directAdd(a, b) }
 }
