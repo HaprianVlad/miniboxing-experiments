@@ -513,7 +513,16 @@ trait FloatIsField extends Field[Float] {
       val aExp = exp(aBits)
 
       val bBits = floatToIntBits(b)
-      val bVal = value(bBits)
+      val bVal = value(bBits)/*
+//////////////////////////////////////////////////////////////////////////////////////
+
+//AdditiveSemigroupOps for infering + operation on generic values
+final class AdditiveSemigroupOps[A](lhs:A)(implicit ev:AdditiveSemigroup[A]) {
+  def +(rhs:A): A = macro Ops.binop[A, A]
+}
+*/
+
+
       val bExp = exp(bBits)
 
       if (aExp < bExp) gcd0(aVal, aExp, bVal, bExp)
