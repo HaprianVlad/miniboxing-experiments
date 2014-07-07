@@ -348,8 +348,8 @@ trait DoubleIsField extends Field[Double] {
   def negate(a:Double): Double = -a
   def one: Double = 1.0
   def plus(a:Double, b:Double): Double = a + b
- //TODO: take a look at this override and pow method in Rig
-  override def  pow(a:Double, b:Int): Double = Math.pow(a, b)
+  //TODO: we don't use math.pow
+  //override def  pow(a:Double, b:Int): Double = Math.pow(a, b)
   override def times(a:Double, b:Double): Double = a * b
   def zero: Double = 0.0
 

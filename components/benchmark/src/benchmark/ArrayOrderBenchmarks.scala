@@ -10,7 +10,7 @@ import com.google.caliper.Runner
 import com.google.caliper.SimpleBenchmark
 import com.google.caliper.Param
 
-import project_macros.implicits
+//import project_macros.implicits
 
 //ARRAY ORDER BENCHMARK SPIRE
 
@@ -43,7 +43,7 @@ class ArrayOrderBenchmarks extends MyBenchmark {
     def times(x:Int,n:Int) = x*n
   }
   
-  implicit object mySemigroup extends project_macros.AdditiveSemigroup[Array[Int]]{}
+  //implicit object mySemigroup extends project_macros.AdditiveSemigroup[Array[Int]]{}
   
 
   override protected def setUp() {
@@ -95,7 +95,7 @@ class ArrayOrderBenchmarks extends MyBenchmark {
   // def timeCompareDirect(reps: Int) = run(reps) { directCompare(a, b) }
 
  //implicits.additiveSemigroupOps(a).+(b)
-  def timeAddGeneric(reps: Int) = run(reps) {implicits.additiveSemigroupOps(a).+(b)}
+ // def timeAddGeneric(reps: Int) = run(reps) {implicits.additiveSemigroupOps(a).+(b)}
   def timeAddIndirect(reps: Int) = run(reps) { indirectAdd(a, b) }
   def timeAddDirect(reps: Int) = run(reps) { directAdd(a, b) }
 }
