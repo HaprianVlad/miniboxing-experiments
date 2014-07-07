@@ -53,7 +53,6 @@ class ArrayOrderBenchmarks extends MyBenchmark {
   def directEq(x: Array[Int], y: Array[Int]): Boolean = {
     var i = 0
     if (x.length != y.length) return false
-    //TODO: == in while was a ===. Take care of diferencies, if we have
     while (i < x.length && i < y.length && x(i) == y(i)) i += 1
     i == x.length
   }

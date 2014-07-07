@@ -981,7 +981,7 @@ trait ConvertableFromAlgebraic extends ConvertableFrom[Algebraic] {
   def toFloat(a: Algebraic): Float = a.toDouble.toFloat
   def toDouble(a: Algebraic): Double = a.toDouble
   def toBigInt(a: Algebraic): BigInt = a.toBigInt
-  // TODO: Figure out how to deal with variable approximability.
+  
   def toBigDecimal(a: Algebraic): BigDecimal = a.toBigDecimal(java.math.MathContext.DECIMAL128)
   def toRational(a: Algebraic): Rational = a.toRational(ApproximationContext(Rational(1L, 100000000000000000L)))
   def toNumber(a: Algebraic): Number = Number(toBigDecimal(a))
@@ -1302,7 +1302,16 @@ trait Monoid[@spec(Boolean, Byte, Short, Int, Long, Float, Double) A]
 object Monoid {
   @inline final def apply[A](implicit m: Monoid[A]): Monoid[A] = m
   @inline final def additive[A](implicit A: AdditiveMonoid[A]) = A.additive
-  @inline final def multiplicative[A](implicit A: MultiplicativeMonoid[A]) = A.multiplicative
+  @inline final def multiplicative[A](implicit A: MultiplicativeMonoid[A]) = A/*
+//////////////////////////////////////////////////////////////////////////////////////
+
+//AdditiveSemigroupOps for infering + operation on generic values
+final class AdditiveSemigroupOps[A](lhs:A)(implicit ev:AdditiveSemigroup[A]) {
+  def +(rhs:A): A = macro Ops.binop[A, A]
+}
+*/
+
+.multiplicative
 
 }
 
@@ -1934,12 +1943,3 @@ object ArraySupport {
     z
   }
 }
-/*
-//////////////////////////////////////////////////////////////////////////////////////
-
-//AdditiveSemigroupOps for infering + operation on generic values
-final class AdditiveSemigroupOps[A](lhs:A)(implicit ev:AdditiveSemigroup[A]) {
-  def +(rhs:A): A = macro Ops.binop[A, A]
-}
-*/
-

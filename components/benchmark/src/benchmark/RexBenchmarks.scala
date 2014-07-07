@@ -117,29 +117,5 @@ class RexBenchmarks extends MyBenchmark with BenchmarkData {
     ai(k)
    
   }
-  
-  
 }
-/*
-//////////////////////////////////////////////////////////////////////////////////////
-
-// Things we need for infering the right operator for generic types
-
-final class EqOps[A](lhs:A)(implicit ev:Eq[A]) {
-  def ===(rhs:A): Boolean = macro Ops.binop[A, Boolean]
-  def =!=(rhs:A): Boolean = macro Ops.binop[A, Boolean]
-}
-
-final class OrderOps[A](lhs: A)(implicit ev: Order[A]) {
-  def >(rhs: A): Boolean = macro Ops.binop[A, Boolean]
-
-}
-trait EqSyntax {
-  implicit def eqOps[A:Eq](a:A) = new EqOps(a)
-}
-
-trait OrderSyntax extends EqSyntax {
-  implicit def orderOps[A:Order](a:A) = new OrderOps(a)
-}
-*/
 
