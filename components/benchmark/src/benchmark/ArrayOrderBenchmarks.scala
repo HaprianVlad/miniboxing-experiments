@@ -4,13 +4,13 @@ package benchmark
 import scala.{specialized => spec}
 import scala.annotation.tailrec
 import scala.reflect.ClassTag
-
 import scala.util.Random
 import Random._
-
-import com.google.caliper.Runner 
+import com.google.caliper.Runner
 import com.google.caliper.SimpleBenchmark
 import com.google.caliper.Param
+
+import project_macros.implicits
 
 //ARRAY ORDER BENCHMARK SPIRE
 
@@ -43,6 +43,8 @@ class ArrayOrderBenchmarks extends MyBenchmark {
     def times(x:Int,n:Int) = x*n
   }
   
+  implicit object mySemigroup extends project_macros.AdditiveSemigroup[Array[Int]]{}
+  
 
   override protected def setUp() {
     val size = math.pow(2, pow).toInt
@@ -73,7 +75,7 @@ class ArrayOrderBenchmarks extends MyBenchmark {
     }
     x.length - y.length
   }
-
+ 
   def indirectAdd[@spec(Int) A: ClassTag: Ring](x: Array[A], y: Array[A]): Array[A] =
    ArraySupport.plus(x, y)
 
@@ -92,9 +94,13 @@ class ArrayOrderBenchmarks extends MyBenchmark {
   // def timeCompareGeneric(reps: Int) = run(reps) { a compare b }
   // def timeCompareDirect(reps: Int) = run(reps) { directCompare(a, b) }
 
-  
- // TODO: I replaced + with ++ in timeAddGeneric, see if something is changed
-  def timeAddGeneric(reps: Int) = run(reps) {  a  ++  b }
+ //implicits.additiveSemigroupOps(a).+(b)
+  def timeAddGeneric(reps: Int) = run(reps) {implicits.additiveSemigroupOps(a).+(b)}
   def timeAddIndirect(reps: Int) = run(reps) { indirectAdd(a, b) }
   def timeAddDirect(reps: Int) = run(reps) { directAdd(a, b) }
 }
+
+
+
+
+

@@ -94,5 +94,7 @@ object MiniboxingBuild extends Build {
   lazy val benchmark = Project(id = "benchmark", base = file("components/benchmark"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings )
   lazy val benchmark_miniboxed = Project(id = "benchmark_miniboxed", base = file("components/benchmark_miniboxed"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings )
   lazy val benchmark_generic = Project(id = "benchmark_generic", base = file("components/benchmark_generic"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings )
+  lazy val project_macros = Project(id = "project_macros", base = file("components/project_macros"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings )
 
 }
+
