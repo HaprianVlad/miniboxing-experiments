@@ -1311,7 +1311,9 @@ trait Monoid[@spec(Boolean, Byte, Short, Int, Long, Float, Double) A]
 object Monoid {
   @inline final def apply[A](implicit m: Monoid[A]): Monoid[A] = m
   @inline final def additive[A](implicit A: AdditiveMonoid[A]) = A.additive
-  @inline final def multiplicative[A](implicit A: MultiplicativeMonoid[A]) = A/*
+  @inline final def multiplicative[A](implicit A: MultiplicativeMonoid[A]) = A.multiplicative
+
+/*
 //////////////////////////////////////////////////////////////////////////////////////
 
 //AdditiveSemigroupOps for infering + operation on generic values
@@ -1319,8 +1321,6 @@ final class AdditiveSemigroupOps[A](lhs:A)(implicit ev:AdditiveSemigroup[A]) {
   def +(rhs:A): A = macro Ops.binop[A, A]
 }
 */
-
-.multiplicative
 
 }
 
@@ -1951,4 +1951,47 @@ object ArraySupport {
     while (i < y.length) { z(i) = y(i); i += 1 }
     z
   }
+  
+  def eqv[@spec A: Eq](x: Array[A], y: Array[A]): Boolean = {
+    var i = 0
+    if (x.length != y.length) return false
+    while (i < x.length && i < y.length && x(i) == y(i)) i += 1
+    i == x.length
+  }
+  
+   def concat[@spec A: ClassTag](x: Array[A], y: Array[A]): Array[A] = {
+    val z = new Array[A](x.length + y.length)
+    System.arraycopy(x, 0, z, 0, x.length)
+    System.arraycopy(y, 0, z, x.length, y.length)
+    z
+  }
+   
+  def compare[@spec A: Order](x: Array[A], y: Array[A]): Int = {
+    var i = 0
+    while (i < x.length && i < y.length) {
+      val cmp =  implicitly[Order[A]].compare(x(i), y(i))
+      if (cmp != 0) return cmp
+      i += 1
+    }
+    x.length - y.length
+  }
+  def negate[@spec(Int, Long, Float, Double) A: ClassTag: Ring](x: Array[A]): Array[A] = {
+    val y = new Array[A](x.length)
+    var i = 0
+    while (i < x.length) {
+      y(i) = implicitly[Ring[A]].negate(x(i))
+      i += 1
+    }
+    y
+  }
+     
+  def timesl[@spec(Int, Long, Float, Double) A: ClassTag: MultiplicativeSemigroup](r: A, x: Array[A]): Array[A] = {
+    val y = new Array[A](x.length)
+    var i = 0
+    while (i < y.length) { y(i) =implicitly[MultiplicativeSemigroup[A]].times(r, x(i)); i += 1 }
+    y
+  }
 }
+
+
+
