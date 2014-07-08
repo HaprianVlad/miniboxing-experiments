@@ -40,6 +40,11 @@ class ArrayOrderBenchmarks extends MyBenchmark {
     def plus(x:Int,y:Int) = x+y
     def times(x:Int,n:Int) = x*n
   }
+   implicit object arrayMonoid extends Monoid[Array[Int]]{
+   def id = new Array(0)
+   def op(x:Array[Int],y:Array[Int]) = ArraySupport.plus(x, y)
+ }
+  
   
 
   override protected def setUp() {
@@ -89,9 +94,7 @@ class ArrayOrderBenchmarks extends MyBenchmark {
   // def timeCompareGeneric(reps: Int) = run(reps) { a compare b }
   // def timeCompareDirect(reps: Int) = run(reps) { directCompare(a, b) }
 
-  
-  
-  def timeAddGeneric(reps: Int) = run(reps) {  a  ++  b }
+  def timeAddGeneric(reps: Int) = run(reps) {implicitly[Monoid[Array[Int]]].op(a,b)}
   def timeAddIndirect(reps: Int) = run(reps) { indirectAdd(a, b) }
   def timeAddDirect(reps: Int) = run(reps) { directAdd(a, b) }
 }

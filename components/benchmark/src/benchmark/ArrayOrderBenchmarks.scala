@@ -96,8 +96,8 @@ class ArrayOrderBenchmarks extends MyBenchmark {
   // def timeCompareGeneric(reps: Int) = run(reps) { a compare b }
   // def timeCompareDirect(reps: Int) = run(reps) { directCompare(a, b) }
 
- //implicits.additiveSemigroupOps(a).+(b)
-  
+
+ //TODO: Vlad take a look if this implementation is correct. Thanks! 
   def timeAddGeneric(reps: Int) = run(reps) {implicitly[Monoid[Array[Int]]].op(a,b)}
   def timeAddIndirect(reps: Int) = run(reps) {indirectAdd(a, b) }
   def timeAddDirect(reps: Int) = run(reps) { directAdd(a, b) }
