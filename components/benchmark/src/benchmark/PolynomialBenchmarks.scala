@@ -217,36 +217,37 @@ class PolynomialBenchmarks extends MyBenchmark {
 //Term
 case class Term[@spec(Float, Double) C](coeff: C, exp: Int) { lhs =>
 
-  def unary_-(implicit r: Rng[C]): Term[C] = Term(-coeff, exp)
+  def unary_-(implicit r: Rng[C]): Term[C] = Term( implicitly[Rng[C]].negate(coeff), exp)
 
   def +(rhs: Term[C])(implicit r: Semiring[C]): Term[C] = {
     if (lhs.exp != rhs.exp)
       throw new IllegalArgumentException(s"can't add terms of degree $exp and ${rhs.exp}")
-    Term(lhs.coeff + rhs.coeff, lhs.exp)
+    
+    Term(implicitly[Semiring[C]].plus(lhs.coeff , rhs.coeff), lhs.exp)
   }	
 
   def *(rhs: Term[C])(implicit r: Semiring[C]): Term[C] =
-    Term(lhs.coeff * rhs.coeff, lhs.exp + rhs.exp)
+    Term(implicitly[Semiring[C]].times(lhs.coeff , rhs.coeff), lhs.exp + rhs.exp)
 
   def toTuple: (Int, C) = (exp, coeff)
 
   def eval(x: C)(implicit r: Semiring[C]): C =
-    if (exp != 0) coeff * (x pow exp) else coeff
+    if (exp != 0) implicitly[Semiring[C]].times(coeff ,implicitly[Semiring[C]].pow(x, exp)) else coeff
 
   def isIndexZero: Boolean =
     exp == 0
 
   def isZero(implicit ring: Semiring[C], eq: Eq[C]): Boolean =
-    coeff === ring.zero
+    coeff == ring.zero
 
   def divideBy(x: C)(implicit f: Field[C]): Term[C] =
-    Term(coeff / x, exp)
+    Term(implicitly[EuclideanRing[C]].quot(coeff,x), exp)
 
   def der(implicit r: Ring[C]): Term[C] =
-    Term(coeff * r.fromInt(exp), exp - 1)
+    Term(implicitly[Ring[C]].times(coeff,r.fromInt(exp)), exp - 1)
 
   def int(implicit f: Field[C]): Term[C] =
-    Term(coeff / f.fromInt(exp + 1), exp + 1)
+    Term(implicitly[EuclideanRing[C]].quot(coeff, f.fromInt(exp + 1)), exp + 1)
 
   override def toString = {
     import Term._
@@ -294,7 +295,7 @@ object Term {
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //PolySparse
 
-case class PolySparse[@spec(Double) C] private [spire] (val exp: Array[Int], val coeff: Array[C])
+case class PolySparse[@spec(Double) C]  (val exp: Array[Int], val coeff: Array[C])
     (implicit val ct: ClassTag[C]) extends Polynomial[C] { lhs =>
 
   def toDense(implicit ring: Semiring[C], eq: Eq[C]): PolyDense[C] =
@@ -331,7 +332,7 @@ case class PolySparse[@spec(Double) C] private [spire] (val exp: Array[Int], val
 
   def reductum(implicit e: Eq[C], ring: Semiring[C], ct: ClassTag[C]): Polynomial[C] = {
     var i = coeff.length - 2
-    while (i >= 0 && coeff(i) === ring.zero) i -= 1
+    while (i >= 0 && coeff(i) == ring.zero) i -= 1
     if (i < 0) {
       new PolySparse(new Array[Int](0), new Array[C](0))
     } else {
@@ -362,7 +363,8 @@ case class PolySparse[@spec(Double) C] private [spire] (val exp: Array[Int], val
     if (e == 0) acc else {
       val lb = numberOfTrailingZeros(e) + 1
       val j = i + lb
-      fastExp(bits, e >>> lb, j, acc * bits(j - 1))
+      fastExp(bits, e >>> lb, j,    implicitly[Semiring[C]].times(acc, bits(j - 1)))
+   
     }
   }
 
@@ -414,7 +416,7 @@ case class PolySparse[@spec(Double) C] private [spire] (val exp: Array[Int], val
     cfor(0)(_ < es.length, _ + 1) { i =>
       val e = exp(i) + 1
       es(i) = e
-      cs(i) = coeff(i) / field.fromInt(e)
+      cs(i) = implicitly[EuclideanRing[C]].quot(coeff(i), field.fromInt(e))
     }
     
     PolySparse.safe(es, cs)
@@ -422,9 +424,10 @@ case class PolySparse[@spec(Double) C] private [spire] (val exp: Array[Int], val
 
   def unary_-()(implicit ring: Rng[C]): Polynomial[C] = {
     val cs = new Array[C](coeff.length)
-    cfor(0)(_ < cs.length, _ + 1) { i => cs(i) = -coeff(i) }
+    cfor(0)(_ < cs.length, _ + 1) { i => cs(i) = implicitly[Rng[C]].negate(coeff(i)) }
     new PolySparse(exp, cs)
   }
+  
 
   def +(rhs0: Polynomial[C])(implicit ring: Semiring[C], eq: Eq[C]): Polynomial[C] = {
     val rhs: PolySparse[C] = PolySparse(rhs0)
@@ -443,13 +446,13 @@ case class PolySparse[@spec(Double) C] private [spire] (val exp: Array[Int], val
   }
 
   def *: (k: C)(implicit ring: Semiring[C], eq: Eq[C]): Polynomial[C] = {
-    if (k === ring.zero) {
+    if (k == ring.zero) {
       PolySparse.zero[C]
     } else {
       val cs = new Array[C](coeff.length)
       cfor(0)(_ < cs.length, _ + 1) { i =>
-        cs(i) = k * coeff(i)
-      }
+        cs(i) = implicitly[Semiring[C]].times( k , coeff(i))
+      } 
       new PolySparse(exp, cs)
     }
   }
@@ -468,7 +471,7 @@ object PolySparse {
       (exp: Array[Int], coeff: Array[C]): PolySparse[C] = {
     var len = 0
     cfor(0)(_ < coeff.length, _ + 1) { i =>
-      if (coeff(i) =!= Semiring[C].zero)
+      if (coeff(i) != Semiring[C].zero)
         len += 1
     }
 
@@ -511,7 +514,7 @@ object PolySparse {
         poly
 
       case (_: PolyDense[_]) =>
-        dense2sparse(poly.asInstanceOf[PolyDense[C]]) // Yay...
+        dense2sparse(poly.asInstanceOf[PolyDense[C]])
 
       case _ =>
         var len = 0
@@ -537,7 +540,8 @@ object PolySparse {
     val cs = new Array[C](coeff.length)
     val es = new Array[Int](exp.length)
     cfor(0)(_ < coeff.length, _ + 1) { i =>
-      cs(i) = c * coeff(i)
+      cs(i) = implicitly[MultiplicativeSemigroup[C]].times(c, coeff(i))
+     
       es(i) = exp(i) + e
     }
     new PolySparse(es, cs)
@@ -588,9 +592,8 @@ object PolySparse {
         val ej = rexp(j)
         if (ei == ej) {
           es(k) = ei
-          cs(k) = lcoeff(i) + rcoeff(j)
-          sum(i + 1, j + 1, k + 1)
-        } else if (ei < ej) {
+         
+          cs(k) = implicitly[Semiring[C]].plus(lcoeff(i),rcoeff(j))
           es(k) = ei
           cs(k) = lcoeff(i)
           sum(i + 1, j, k + 1)
@@ -634,6 +637,7 @@ object PolySparse {
         if (ei == ej) {
           es(k) = ei
           cs(k) = lcoeff(i) - c * rcoeff(j)
+        
           loop(i + 1, j + 1, k + 1)
         } else if (ei < ej) {
           es(k) = ei
@@ -748,7 +752,8 @@ class PolyDense[@spec(Double) C] private[spire] (val coeffs: Array[C])
     if ((even & 1) == 1) { even = odd; odd = coeffs.length - 1 }
 
     var c0 = coeffs(even)
-    val x2 = x.pow(2)
+    
+    val x2 = implicitly[Semiring[C]].pow(x, 2)
     cfor(even - 2)(_ >= 0, _ - 2) { i =>
       c0 = coeffs(i) + c0 * x2
     }
