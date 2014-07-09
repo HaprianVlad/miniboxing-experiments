@@ -755,15 +755,16 @@ class PolyDense[@spec(Double) C] private[spire] (val coeffs: Array[C])
     
     val x2 = implicitly[Semiring[C]].pow(x, 2)
     cfor(even - 2)(_ >= 0, _ - 2) { i =>
-      c0 = coeffs(i) + c0 * x2
+      c0 =implicitly[Semiring[C]].plus(coeffs(i),  implicitly[Semiring[C]].times(c0, x2))
+      
     }
 
     if (odd >= 1) {
       var c1 = coeffs(odd)
       cfor(odd - 2)(_ >= 1, _ - 2) { i =>
-        c1 = coeffs(i) + c1 * x2
+        c1 = implicitly[Semiring[C]].plus(coeffs(i),  implicitly[Semiring[C]].times(c1, x2))
       }
-      c0 + c1 * x
+      implicitly[Semiring[C]].plus(c0,  implicitly[Semiring[C]].times(c1, x))
     } else {
       c0
     }
@@ -774,7 +775,7 @@ class PolyDense[@spec(Double) C] private[spire] (val coeffs: Array[C])
     val cs = new Array[C](degree)
     var j = coeffs.length - 1
     cfor(cs.length - 1)(_ >= 0, _ - 1) { i =>
-      cs(i) = ring.fromInt(j) * coeffs(j)
+      cs(i) = implicitly[Semiring[C]].times(ring.fromInt(j), coeffs(j))
       j -= 1
     }
     Polynomial.dense(cs)
@@ -783,13 +784,14 @@ class PolyDense[@spec(Double) C] private[spire] (val coeffs: Array[C])
   def integral(implicit field: Field[C], eq: Eq[C]): Polynomial[C] = {
     val cs = new Array[C](coeffs.length + 1)
     cs(0) = field.zero
-    cfor(0)(_ < coeffs.length, _ + 1) { i => cs(i + 1) = coeffs(i) / field.fromInt(i + 1) }
+ 
+    cfor(0)(_ < coeffs.length, _ + 1) { i => cs(i + 1) =   implicitly[Field[C]].quot( coeffs(i), field.fromInt(i + 1))  }
     Polynomial.dense(cs)
   }
 
   def unary_-()(implicit ring: Rng[C]): Polynomial[C] = {
     val negArray = new Array[C](coeffs.length)
-    cfor(0)(_ < coeffs.length, _ + 1) { i => negArray(i) = -coeffs(i) }
+    cfor(0)(_ < coeffs.length, _ + 1) { i => negArray(i) = implicitly[Rng[C]].negate(coeffs(i)) }
     new PolyDense(negArray)
   }
 
@@ -816,13 +818,13 @@ class PolyDense[@spec(Double) C] private[spire] (val coeffs: Array[C])
 
   def /%(rhs: Polynomial[C])(implicit field: Field[C], eq: Eq[C]): (Polynomial[C], Polynomial[C]) = {
     def zipSum(lcs: Array[C], rcs: Array[C])(implicit r: Ring[C]): Array[C] =
-      (lcs + rcs).tail
+      implicitly[Ring[Array[C]]].plus(lcs, rcs).tail
 
     def polyFromCoeffsLE(cs: Array[C]): Polynomial[C] =
       Polynomial.dense(cs)
 
     def polyFromCoeffsBE(cs: Array[C]): Polynomial[C] = {
-      val ncs = cs.dropWhile(_ === field.zero)
+      val ncs = cs.dropWhile(_ == field.zero)
       Polynomial.dense(ncs.reverse)
     }
             
@@ -832,7 +834,8 @@ class PolyDense[@spec(Double) C] private[spire] (val coeffs: Array[C])
       } else {
         val v0 = if (rhs.isZero) field.zero else rhs.maxOrderTermCoeff
         val q0 = try {
-          val q0 = u(0) / v0
+          val q0 =implicitly[Field[C]].quot(u(0),v0)
+          
           q0
         } catch {
           case e: Exception =>
@@ -840,7 +843,8 @@ class PolyDense[@spec(Double) C] private[spire] (val coeffs: Array[C])
             println("%s / %s exploded" format (u(0), v0))
             throw e
         }
-        val uprime = zipSum(u, rhs.coeffsArray.reverse.map(_ * -q0))
+     
+        val uprime = zipSum(u, rhs.coeffsArray.reverse.map(implicitly[Field[C]].times(_,implicitly[Field[C]].negate(q0))))
         eval(Array(q0) ++ q, uprime, n - 1)
       }
     }
@@ -850,7 +854,7 @@ class PolyDense[@spec(Double) C] private[spire] (val coeffs: Array[C])
       throw new ArithmeticException("/ by zero polynomial")
     } else if (cs.length == 1) {
       val c = cs(0)
-      val q = Polynomial.dense(lhs.coeffs.map(_ / c))
+      val q = Polynomial.dense(lhs.coeffs.map(implicitly[Field[C]].quot(_,c)))
       val r = Polynomial.dense(new Array[C](0))
       (q, r)
     } else {
@@ -859,12 +863,13 @@ class PolyDense[@spec(Double) C] private[spire] (val coeffs: Array[C])
   }
 
   def *: (k: C)(implicit ring: Semiring[C], eq: Eq[C]): Polynomial[C] =
-    if (k === ring.zero) {
+    if (k == ring.zero) {
       Polynomial.dense(new Array[C](0))
     } else {
       val cs = new Array[C](coeffs.length)
       cfor(0)(_ < cs.length, _ + 1) { i =>
-        cs(i) = k * coeffs(i)
+        cs(i) =  implicitly[Semiring[C]].times(k,coeffs(i))
+       
       }
       Polynomial.dense(cs)
     }
@@ -879,8 +884,8 @@ object PolyDense {
     } else {
       val cs = new Array[C](lcoeffs.length)
       cfor(0)(_ < rcoeffs.length, _ + 1) { i =>
-        cs(i) = lcoeffs(i) + rcoeffs(i)
-      }
+        cs(i) =  implicitly[Semiring[C]].plus(lcoeffs(i),rcoeffs(i))
+      } 
       cfor(rcoeffs.length)(_ < lcoeffs.length, _ + 1) { i =>
         cs(i) = lcoeffs(i)
       }
@@ -937,7 +942,7 @@ object Polynomial extends PolynomialInstances {
   def x[@spec(Double) C: Eq: Rig: ClassTag]: Polynomial[C] =
     linear(Rig[C].one)
   def twox[@spec(Double) C: Eq: Rig: ClassTag]: Polynomial[C] =
-    linear(Rig[C].one + Rig[C].one)
+    linear( implicitly[Semiring[C]].plus(Rig[C].one,Rig[C].one))
 
   private val termRe = "([0-9]+\\.[0-9]+|[0-9]+/[0-9]+|[0-9]+)?(?:([a-z])(?:\\^([0-9]+))?)?".r
 
@@ -1004,7 +1009,9 @@ object Polynomial extends PolynomialInstances {
         case Nil =>
           p
         case (x, y) :: tail =>
-          val c = Polynomial.constant((y - p(x)) / xs.map(x - _).qproduct)
+          val c = Polynomial.constant( implicitly[Field[C]].quot(
+                                       implicitly[Semiring[C]].plus(y,implicitly[Field[C]].negate(p(x))) , 
+        		  					   xs.map(implicitly[Semiring[C]].plus(x,implicitly[Field[C]].negate(_)))).qproduct
           val prod = xs.foldLeft(Polynomial.one[C]) { (prod, xn) =>
             prod * (Polynomial.x[C] - constant(xn))
           }
@@ -1128,7 +1135,8 @@ trait Polynomial[@spec(Double) C] { lhs =>
 
   def *: (k: C)(implicit ring: Semiring[C], eq: Eq[C]): Polynomial[C]
   def :* (k: C)(implicit ring: Semiring[C], eq: Eq[C]): Polynomial[C] = k *: lhs
-  def :/ (k: C)(implicit field: Field[C], eq: Eq[C]): Polynomial[C] = this :* k.reciprocal
+  def :/ (k: C)(implicit field: Field[C], eq: Eq[C]): Polynomial[C] = this :* k
+  //TODO: Should be k.reciprocal in method above
 
   override def equals(that: Any): Boolean = that match {
     case rhs: Polynomial[_] if lhs.degree == rhs.degree =>
@@ -1600,8 +1608,11 @@ object Rational extends RationalInstances {
     def findnroot(prev: Long, add: Long): (Long, Long) = {
       val min = prev | add
       val max = min + 1
-      val fl = pow(min, n)
-      val cl = pow(max, n)
+     // val fl = pow(min, n)
+      //val cl = pow(max, n)
+      val fl=1
+      val cl =1
+      //TODO:See this commment
 
       if (fl <= 0 || fl > x) {
         findnroot(prev, add >> 1)
@@ -1685,16 +1696,16 @@ private abstract class Rationals[@specialized(Long) A](implicit integral: Integr
       else 29 * (37 * num.## + den.##)
 
     override def equals(that: Any): Boolean = that match {
-      case that: Real => this == that.toRational
-      case that: Algebraic => that == this
+      //case that: Real => this == that.toRational
+     // case that: Algebraic => that == this
       case that: RationalLike => num == that.num && den == that.den
       case that: BigInt => isWhole && toBigInt == that
       case that: BigDecimal => try { toBigDecimal == that } catch { case ae: ArithmeticException => false }
       case that: SafeLong => SafeLong(toBigInt) == that
-      case that: Number => Number(this) == that
-      case that: Natural => isWhole && this == Rational(that.toBigInt)
+     // case that: Number => Number(this) == that
+      //case that: Natural => isWhole && this == Rational(that.toBigInt)
       case that: Complex[_] => that == this
-      case that: Quaternion[_] => that == this
+      //case that: Quaternion[_] => that == this
       case that => unifiedPrimitiveEquals(that)
     }
 
@@ -2586,4 +2597,40 @@ trait SafeLongIsEuclideanRing extends EuclideanRing[SafeLong] with SafeLongIsRin
  trait SafeLongIsReal extends IsIntegral[SafeLong] with SafeLongOrder with SafeLongIsSigned {
   def toDouble(n: SafeLong): Double = n.toDouble
 }
+///////////////////////////////////////////////////////////////////////////////////////////
+// Ring Algebra
+ 
+ trait RingAlgebra[V, @spec R] extends Module[V, R] with Rng[V]
 
+object RingAlgebra {
+  implicit def ZAlgebra[A](implicit vector0: Ring[A], scalar0: Ring[Int]) = new ZAlgebra[A] {
+    val vector = vector0
+    val scalar = scalar0
+  }
+}
+
+/**
+* Given any `Ring[A]` we can construct a `RingAlgebra[A, Int]`. This is
+* possible since we can define `fromInt` on `Ring` generally.
+*/
+trait ZAlgebra[V] extends RingAlgebra[V, Int] with Ring[V] {
+  implicit def vector: Ring[V]
+  implicit def scalar: Ring[Int]
+
+  def zero: V = vector.zero
+  def one: V = vector.one
+  def negate(v: V): V = vector.negate(v)
+  def plus(v: V, w: V): V = vector.plus(v, w)
+  override def minus(v: V, w: V): V = vector.minus(v, w)
+  def times(v: V, w: V): V = vector.times(v, w)
+
+  def timesl(r: Int, v: V): V = vector.times(vector.fromInt(r), v)
+
+  override def fromInt(n: Int): V = vector.fromInt(n)
+}
+
+/**
+* A `FieldAlgebra` is a vector space that is also a `Ring`. An example is the
+* complex numbers.
+*/
+trait FieldAlgebra[V, @spec(Float, Double) F] extends RingAlgebra[V, F] with VectorSpace[V, F]
