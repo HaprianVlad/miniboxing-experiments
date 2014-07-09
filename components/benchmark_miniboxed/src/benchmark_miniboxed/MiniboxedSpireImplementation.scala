@@ -18,7 +18,7 @@ import scala.math.{ScalaNumber, ScalaNumericConversions, ScalaNumericAnyConversi
 //******************************************************************//
 
 // This part consists on isolating the needed spire implementation for this benchmark using
-// @minbiboxed anontation instead of @spec and @specialized
+// @minbiboxed anontation instead of @miniboxed and @miniboxedialized
 
 //*****************************************************************//
 
@@ -1590,4 +1590,45 @@ object ArraySupport {
     while (i < y.length) { z(i) = y(i); i += 1 }
     z
   }
+  
+  def eqv[@miniboxed A: Eq](x: Array[A], y: Array[A]): Boolean = {
+    var i = 0
+    if (x.length != y.length) return false
+    while (i < x.length && i < y.length && x(i) == y(i)) i += 1
+    i == x.length
+  }
+  
+   def concat[@miniboxed A: ClassTag](x: Array[A], y: Array[A]): Array[A] = {
+    val z = new Array[A](x.length + y.length)
+    System.arraycopy(x, 0, z, 0, x.length)
+    System.arraycopy(y, 0, z, x.length, y.length)
+    z
+  }
+   
+  def compare[@miniboxed A: Order](x: Array[A], y: Array[A]): Int = {
+    var i = 0
+    while (i < x.length && i < y.length) {
+      val cmp =  implicitly[Order[A]].compare(x(i), y(i))
+      if (cmp != 0) return cmp
+      i += 1
+    }
+    x.length - y.length
+  }
+  def negate[@miniboxed A: ClassTag: Ring](x: Array[A]): Array[A] = {
+    val y = new Array[A](x.length)
+    var i = 0
+    while (i < x.length) {
+      y(i) = implicitly[Ring[A]].negate(x(i))
+      i += 1
+    }
+    y
+  }
+     
+  def timesl[@miniboxed A: ClassTag: MultiplicativeSemigroup](r: A, x: Array[A]): Array[A] = {
+    val y = new Array[A](x.length)
+    var i = 0
+    while (i < y.length) { y(i) =implicitly[MultiplicativeSemigroup[A]].times(r, x(i)); i += 1 }
+    y
+  }
 }
+

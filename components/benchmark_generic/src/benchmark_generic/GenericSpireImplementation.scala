@@ -1582,7 +1582,7 @@ object FastComplex {
 object ArraySupport {
  
   
-  def plus[ A: ClassTag: AdditiveMonoid](x: Array[A], y: Array[A]): Array[A] = {
+  def plus[A: ClassTag: AdditiveMonoid](x: Array[A], y: Array[A]): Array[A] = {
    
     val z = new Array[A](math.max(x.length, y.length))
     var i = 0
@@ -1591,5 +1591,46 @@ object ArraySupport {
     while (i < y.length) { z(i) = y(i); i += 1 }
     z
   }
+  
+  def eqv[ A: Eq](x: Array[A], y: Array[A]): Boolean = {
+    var i = 0
+    if (x.length != y.length) return false
+    while (i < x.length && i < y.length && x(i) == y(i)) i += 1
+    i == x.length
+  }
+  
+   def concat[ A: ClassTag](x: Array[A], y: Array[A]): Array[A] = {
+    val z = new Array[A](x.length + y.length)
+    System.arraycopy(x, 0, z, 0, x.length)
+    System.arraycopy(y, 0, z, x.length, y.length)
+    z
+  }
+   
+  def compare[ A: Order](x: Array[A], y: Array[A]): Int = {
+    var i = 0
+    while (i < x.length && i < y.length) {
+      val cmp =  implicitly[Order[A]].compare(x(i), y(i))
+      if (cmp != 0) return cmp
+      i += 1
+    }
+    x.length - y.length
+  }
+  def negate[ A: ClassTag: Ring](x: Array[A]): Array[A] = {
+    val y = new Array[A](x.length)
+    var i = 0
+    while (i < x.length) {
+      y(i) = implicitly[Ring[A]].negate(x(i))
+      i += 1
+    }
+    y
+  }
+     
+  def timesl[ A: ClassTag: MultiplicativeSemigroup](r: A, x: Array[A]): Array[A] = {
+    val y = new Array[A](x.length)
+    var i = 0
+    while (i < y.length) { y(i) =implicitly[MultiplicativeSemigroup[A]].times(r, x(i)); i += 1 }
+    y
+  }
 }
+
 
