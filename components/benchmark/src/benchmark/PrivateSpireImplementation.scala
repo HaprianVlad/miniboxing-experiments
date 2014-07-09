@@ -1711,6 +1711,26 @@ object Eq {
 // Math 
 
 package object math {
+  
+   /**
+   * abs
+   */
+  final def abs(n: Byte): Byte = Math.abs(n).toByte
+  final def abs(n: Short): Short = Math.abs(n).toShort
+  final def abs(n: Int): Int = Math.abs(n)
+  final def abs(n: Long): Long = Math.abs(n)
+  final def abs(n: Float): Float = Math.abs(n)
+  final def abs(n: Double): Double = Math.abs(n)
+  final def abs[A](a: A)(implicit ev: Signed[A]): A = ev.abs(a)
+  
+  /**
+   * ceil
+   */
+  final def ceil(n: Float): Float = Math.ceil(n).toFloat
+  final def ceil(n: Double): Double = Math.ceil(n)
+ // final def ceil(n: BigDecimal): BigDecimal = n.setScale(0, CEILING)
+  final def ceil[A](a: A)(implicit ev: IsReal[A]): A = ev.ceil(a)
+
 
   /**
    * min

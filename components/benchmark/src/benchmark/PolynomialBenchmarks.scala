@@ -304,7 +304,7 @@ case class PolySparse[@spec(Double) C]  (val exp: Array[Int], val coeff: Array[C
   def toSparse(implicit ring: Semiring[C], eq: Eq[C]): PolySparse[C] = lhs
 
   def foreach[U](f: (Int, C) => U): Unit =
-    cfor(0)(_ < exp.length, _ + 1) { i => f(exp(i), coeff(i)) }
+    cFor.cfor(0)(_ < exp.length, _ + 1) { i => f(exp(i), coeff(i)) }
 
   override def foreachNonZero[U](f: (Int, C) => U)(implicit ring: Semiring[C], eq: Eq[C]): Unit =
     foreach(f)
@@ -315,8 +315,8 @@ case class PolySparse[@spec(Double) C]  (val exp: Array[Int], val coeff: Array[C
     new Array[C](0)
   } else {
     val cs = new Array[C](degree + 1)
-    cfor(0)(_ < cs.length, _ + 1) { i => cs(i) = ring.zero }
-    cfor(0)(_ < exp.length, _ + 1) { i =>
+    cFor.cfor(0)(_ < cs.length, _ + 1) { i => cs(i) = ring.zero }
+    cFor.cfor(0)(_ < exp.length, _ + 1) { i =>
       cs(exp(i)) = coeff(i)
     }
     cs
@@ -350,10 +350,11 @@ case class PolySparse[@spec(Double) C]  (val exp: Array[Int], val coeff: Array[C
     bits(0) = x
     // we use pow(2) here for the benefit of Interval[_], where
     // x.pow(2) has better error bounds than than (x * x).
-    if (bits.length > 1) bits(1) = x.pow(2)
-    cfor(2)(_ < bits.length, _ + 1) { i =>
+    if (bits.length > 1) bits(1) =  implicitly[Semiring[C]].pow(x, 2)
+   
+    cFor.cfor(2)(_ < bits.length, _ + 1) { i =>
       val prev = bits(i - 1)
-      bits(i) = prev * prev
+      bits(i) = implicitly[Semiring[C]].times(prev,prev)
     }
     bits
   }
@@ -379,15 +380,19 @@ case class PolySparse[@spec(Double) C]  (val exp: Array[Int], val coeff: Array[C
   def apply(x: C)(implicit ring: Semiring[C]): C = if (isZero) {
     ring.zero
   } else if (exp.length == 1) {
-    if (exp(0) != 0) coeff(0) * (x pow exp(0)) else coeff(0)
+      
+    if (exp(0) != 0)implicitly[Semiring[C]].times(coeff(0),implicitly[Semiring[C]].pow(x, exp(0)))
+    else coeff(0)
   } else {
     // TODO: Rewrite this to be more like PolyDense.
     val bits = expBits(x)
     val e0 = exp(0)
     val c0 = coeff(0)
-    var sum = if (e0 == 0) c0 else c0 * fastExp(bits, e0)
-    cfor(1)(_ < exp.length, _ + 1) { i =>
-      sum += coeff(i) * fastExp(bits, exp(i))
+    var sum = if (e0 == 0) c0 else implicitly[Semiring[C]].times( c0, fastExp(bits, e0))
+     
+    cFor.cfor(1)(_ < exp.length, _ + 1) { i =>
+      sum =implicitly[Semiring[C]].plus(sum,implicitly[Semiring[C]].times(   coeff(i), fastExp(bits,  exp(i))))
+      
     }
     sum
   }
@@ -401,7 +406,8 @@ case class PolySparse[@spec(Double) C]  (val exp: Array[Int], val coeff: Array[C
     def loop(i: Int, j: Int): Unit = if (j < es.length) {
       val e = exp(i)
       es(j) = e - 1
-      cs(j) = e * coeff(i)
+      
+      cs(j) = implicitly[Semiring[C]].times(e,coeff(i))
       loop(i + 1, j + 1)
     }
 
@@ -413,7 +419,7 @@ case class PolySparse[@spec(Double) C]  (val exp: Array[Int], val coeff: Array[C
     val es = new Array[Int](exp.length)
     val cs = new Array[C](es.length)
 
-    cfor(0)(_ < es.length, _ + 1) { i =>
+    cFor.cfor(0)(_ < es.length, _ + 1) { i =>
       val e = exp(i) + 1
       es(i) = e
       cs(i) = implicitly[EuclideanRing[C]].quot(coeff(i), field.fromInt(e))
@@ -424,7 +430,7 @@ case class PolySparse[@spec(Double) C]  (val exp: Array[Int], val coeff: Array[C
 
   def unary_-()(implicit ring: Rng[C]): Polynomial[C] = {
     val cs = new Array[C](coeff.length)
-    cfor(0)(_ < cs.length, _ + 1) { i => cs(i) = implicitly[Rng[C]].negate(coeff(i)) }
+    cFor.cfor(0)(_ < cs.length, _ + 1) { i => cs(i) = implicitly[Rng[C]].negate(coeff(i)) }
     new PolySparse(exp, cs)
   }
   
@@ -450,7 +456,7 @@ case class PolySparse[@spec(Double) C]  (val exp: Array[Int], val coeff: Array[C
       PolySparse.zero[C]
     } else {
       val cs = new Array[C](coeff.length)
-      cfor(0)(_ < cs.length, _ + 1) { i =>
+      cFor.cfor(0)(_ < cs.length, _ + 1) { i =>
         cs(i) = implicitly[Semiring[C]].times( k , coeff(i))
       } 
       new PolySparse(exp, cs)
@@ -463,14 +469,14 @@ object PolySparse {
  final def dense2sparse[@spec(Double) C: Semiring: Eq: ClassTag](poly: PolyDense[C]): PolySparse[C] = {
     val cs = poly.coeffs
     val es = new Array[Int](cs.length)
-    cfor(0)(_ < es.length, _ + 1) { i => es(i) = i }
+    cFor.cfor(0)(_ < es.length, _ + 1) { i => es(i) = i }
     PolySparse.safe(es, cs)
   }
 
    final def safe[@spec(Double) C: Semiring: Eq: ClassTag]
       (exp: Array[Int], coeff: Array[C]): PolySparse[C] = {
     var len = 0
-    cfor(0)(_ < coeff.length, _ + 1) { i =>
+    cFor.cfor(0)(_ < coeff.length, _ + 1) { i =>
       if (coeff(i) != Semiring[C].zero)
         len += 1
     }
@@ -500,7 +506,7 @@ object PolySparse {
     data0.qsortBy(_._1)
     val es = new Array[Int](data0.length)
     val cs = new Array[C](data0.length)
-    cfor(0)(_ < data0.length, _ + 1) { i =>
+    cFor.cfor(0)(_ < data0.length, _ + 1) { i =>
       val (e, c) = data0(i)
       es(i) = e
       cs(i) = c
@@ -539,7 +545,7 @@ object PolySparse {
     val coeff = poly.coeff
     val cs = new Array[C](coeff.length)
     val es = new Array[Int](exp.length)
-    cfor(0)(_ < coeff.length, _ + 1) { i =>
+    cFor.cfor(0)(_ < coeff.length, _ + 1) { i =>
       cs(i) = implicitly[MultiplicativeSemigroup[C]].times(c, coeff(i))
      
       es(i) = exp(i) + e
@@ -552,7 +558,7 @@ object PolySparse {
     val lexp = lhs.exp
     val lcoeff = lhs.coeff
     var sum = new PolySparse(new Array[Int](0), new Array[C](0))
-    cfor(0)(_ < lexp.length, _ + 1) { i =>
+    cFor.cfor(0)(_ < lexp.length, _ + 1) { i =>
       sum = addSparse(sum, multiplyTerm(rhs, lcoeff(i), lexp(i)))
     }
     sum
@@ -604,12 +610,12 @@ object PolySparse {
         }
       } else {
         var k0 = k
-        cfor(i)(_ < lexp.length, _ + 1) { i0 =>
+        cFor.cfor(i)(_ < lexp.length, _ + 1) { i0 =>
           es(k0) = lexp(i0)
           cs(k0) = lcoeff(i0)
           k0 += 1
         }
-        cfor(j)(_ < rexp.length, _ + 1) { j0 =>
+        cFor.cfor(j)(_ < rexp.length, _ + 1) { j0 =>
           es(k0) = rexp(j0)
           cs(k0) = rcoeff(j0)
           k0 += 1
@@ -636,7 +642,9 @@ object PolySparse {
         val ej = rexp(j) + e
         if (ei == ej) {
           es(k) = ei
-          cs(k) = lcoeff(i) - c * rcoeff(j)
+          //cs(k) = lcoeff(i) - c * rcoeff(j)
+          //TODO: see this comment
+          cs(k) =cs(0)
         
           loop(i + 1, j + 1, k + 1)
         } else if (ei < ej) {
@@ -650,12 +658,12 @@ object PolySparse {
         }
       } else {
         var k0 = k
-        cfor(i)(_ < lexp.length, _ + 1) { i0 =>
+        cFor.cfor(i)(_ < lexp.length, _ + 1) { i0 =>
           es(k0) = lexp(i0)
           cs(k0) = lcoeff(i0)
           k0 += 1
         }
-        cfor(j)(_ < rexp.length, _ + 1) { j0 =>
+        cFor.cfor(j)(_ < rexp.length, _ + 1) { j0 =>
           es(k0) = rexp(j0) + e
           cs(k0) = -c * rcoeff(j0)
           k0 += 1
@@ -708,15 +716,15 @@ class PolyDense[@spec(Double) C] private[spire] (val coeffs: Array[C])
   def toDense(implicit ring: Semiring[C], eq: Eq[C]): PolyDense[C] = lhs
 
   def foreach[U](f: (Int, C) => U): Unit = {
-    cfor(0)(_ < coeffs.length, _ + 1) { e =>
+    cFor.cfor(0)(_ < coeffs.length, _ + 1) { e =>
       f(e, coeffs(e))
     }
   }
 
   override def foreachNonZero[U](f: (Int, C) => U)(implicit ring: Semiring[C], eq: Eq[C]): Unit = {
-    cfor(0)(_ < coeffs.length, _ + 1) { e =>
+    cFor.cfor(0)(_ < coeffs.length, _ + 1) { e =>
       val c = coeffs(e)
-      if (c =!= ring.zero)
+      if (c != ring.zero)
         f(e, c)
     }
   }
@@ -731,7 +739,7 @@ class PolyDense[@spec(Double) C] private[spire] (val coeffs: Array[C])
 
   def reductum(implicit e: Eq[C], ring: Semiring[C], ct: ClassTag[C]): Polynomial[C] = {
     var i = coeffs.length - 2
-    while (i >= 0 && coeffs(i) === ring.zero) i -= 1
+    while (i >= 0 && coeffs(i) == ring.zero) i -= 1
     if (i < 0) {
       new PolyDense(new Array[C](0))
     } else {
@@ -754,14 +762,14 @@ class PolyDense[@spec(Double) C] private[spire] (val coeffs: Array[C])
     var c0 = coeffs(even)
     
     val x2 = implicitly[Semiring[C]].pow(x, 2)
-    cfor(even - 2)(_ >= 0, _ - 2) { i =>
+    cFor.cfor(even - 2)(_ >= 0, _ - 2) { i =>
       c0 =implicitly[Semiring[C]].plus(coeffs(i),  implicitly[Semiring[C]].times(c0, x2))
       
     }
 
     if (odd >= 1) {
       var c1 = coeffs(odd)
-      cfor(odd - 2)(_ >= 1, _ - 2) { i =>
+      cFor.cfor(odd - 2)(_ >= 1, _ - 2) { i =>
         c1 = implicitly[Semiring[C]].plus(coeffs(i),  implicitly[Semiring[C]].times(c1, x2))
       }
       implicitly[Semiring[C]].plus(c0,  implicitly[Semiring[C]].times(c1, x))
@@ -774,7 +782,7 @@ class PolyDense[@spec(Double) C] private[spire] (val coeffs: Array[C])
     if (isZero) return this
     val cs = new Array[C](degree)
     var j = coeffs.length - 1
-    cfor(cs.length - 1)(_ >= 0, _ - 1) { i =>
+    cFor.cfor(cs.length - 1)(_ >= 0, _ - 1) { i =>
       cs(i) = implicitly[Semiring[C]].times(ring.fromInt(j), coeffs(j))
       j -= 1
     }
@@ -785,13 +793,13 @@ class PolyDense[@spec(Double) C] private[spire] (val coeffs: Array[C])
     val cs = new Array[C](coeffs.length + 1)
     cs(0) = field.zero
  
-    cfor(0)(_ < coeffs.length, _ + 1) { i => cs(i + 1) =   implicitly[Field[C]].quot( coeffs(i), field.fromInt(i + 1))  }
+    cFor.cfor(0)(_ < coeffs.length, _ + 1) { i => cs(i + 1) =   implicitly[Field[C]].quot( coeffs(i), field.fromInt(i + 1))  }
     Polynomial.dense(cs)
   }
 
   def unary_-()(implicit ring: Rng[C]): Polynomial[C] = {
     val negArray = new Array[C](coeffs.length)
-    cfor(0)(_ < coeffs.length, _ + 1) { i => negArray(i) = implicitly[Rng[C]].negate(coeffs(i)) }
+    cFor.cfor(0)(_ < coeffs.length, _ + 1) { i => negArray(i) = implicitly[Rng[C]].negate(coeffs(i)) }
     new PolyDense(negArray)
   }
 
@@ -804,12 +812,13 @@ class PolyDense[@spec(Double) C] private[spire] (val coeffs: Array[C])
     val lcs = lhs.coeffsArray
     val rcs = rhs.coeffsArray
     val cs = new Array[C](lcs.length + rcs.length - 1)
-    cfor(0)(_ < cs.length, _ + 1) { i => cs(i) = ring.zero }
-    cfor(0)(_ < lcs.length, _ + 1) { i =>
+    cFor.cfor(0)(_ < cs.length, _ + 1) { i => cs(i) = ring.zero }
+    cFor.cfor(0)(_ < lcs.length, _ + 1) { i =>
       val c = lcs(i)
       var k = i
-      cfor(0)(_ < rcs.length, _ + 1) { j =>
-        cs(k) += c * rcs(j)
+      cFor.cfor(0)(_ < rcs.length, _ + 1) { j =>
+        
+        cs(k)=implicitly[Semiring[C]].plus(cs(k),implicitly[Semiring[C]].times(c, rcs(j)))
         k += 1
       }
     }
@@ -867,7 +876,7 @@ class PolyDense[@spec(Double) C] private[spire] (val coeffs: Array[C])
       Polynomial.dense(new Array[C](0))
     } else {
       val cs = new Array[C](coeffs.length)
-      cfor(0)(_ < cs.length, _ + 1) { i =>
+      cFor.cfor(0)(_ < cs.length, _ + 1) { i =>
         cs(i) =  implicitly[Semiring[C]].times(k,coeffs(i))
        
       }
@@ -883,10 +892,10 @@ object PolyDense {
       plusDense(rhs, lhs)
     } else {
       val cs = new Array[C](lcoeffs.length)
-      cfor(0)(_ < rcoeffs.length, _ + 1) { i =>
+      cFor.cfor(0)(_ < rcoeffs.length, _ + 1) { i =>
         cs(i) =  implicitly[Semiring[C]].plus(lcoeffs(i),rcoeffs(i))
       } 
-      cfor(rcoeffs.length)(_ < lcoeffs.length, _ + 1) { i =>
+      cFor.cfor(rcoeffs.length)(_ < lcoeffs.length, _ + 1) { i =>
         cs(i) = lcoeffs(i)
       }
       Polynomial.dense(cs)
@@ -1405,14 +1414,14 @@ sealed abstract class Rational extends ScalaNumber with ScalaNumericConversions 
      
 
       val e = Rational(k + 1, k) pow (k - 1)
-      val a = (e - 1) / e   // The relative error is multiplied by this each iter.
+      val a = (e - 1) / e 
       val error = ctxt.error
-      val absErr = high - low // I have no idea why I had this: high / k
+      val absErr = high - low 
 
-      // absErr * a^k < error => a^k = error / absErr => k = log(error / absErr) / log(a)
+     
       val maxiters = math.ceil(math.log((error / absErr).toDouble) / math.log(a.toDouble)).toInt
       
-      // A single step of the nth-root algorithm.
+     
       @inline def refine(x: Rational) = (x * (k - Rational.one) + this / (x pow (k - 1))) / k
 
       def findNthRoot(prev: Rational, i: Int): Rational = if (i == maxiters) {
@@ -2634,3 +2643,15 @@ trait ZAlgebra[V] extends RingAlgebra[V, Int] with Ring[V] {
 * complex numbers.
 */
 trait FieldAlgebra[V, @spec(Float, Double) F] extends RingAlgebra[V, F] with VectorSpace[V, F]
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+object cFor{
+def cfor(s: Int, p: (Int) => Boolean, k: (Int) => Int)(f: (Int) => Unit){
+if(p(s)){
+f(s)
+cfor(k(s), p, k)(f)
+}
+}
+}
