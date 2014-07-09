@@ -457,14 +457,14 @@ case class PolySparse[@spec(Double) C] private [spire] (val exp: Array[Int], val
 
 
 object PolySparse {
-  private final def dense2sparse[@spec(Double) C: Semiring: Eq: ClassTag](poly: PolyDense[C]): PolySparse[C] = {
+ final def dense2sparse[@spec(Double) C: Semiring: Eq: ClassTag](poly: PolyDense[C]): PolySparse[C] = {
     val cs = poly.coeffs
     val es = new Array[Int](cs.length)
     cfor(0)(_ < es.length, _ + 1) { i => es(i) = i }
     PolySparse.safe(es, cs)
   }
 
-  private final def safe[@spec(Double) C: Semiring: Eq: ClassTag]
+   final def safe[@spec(Double) C: Semiring: Eq: ClassTag]
       (exp: Array[Int], coeff: Array[C]): PolySparse[C] = {
     var len = 0
     cfor(0)(_ < coeff.length, _ + 1) { i =>
@@ -480,7 +480,7 @@ object PolySparse {
       @tailrec def loop(i: Int, j: Int): PolySparse[C] =
         if (i < coeff.length) {
           val c = coeff(i)
-          if (c =!= Semiring[C].zero) {
+          if (c != Semiring[C].zero) {
             es(j) = exp(i)
             cs(j) = c
             loop(i + 1, j + 1)
@@ -1021,7 +1021,7 @@ trait Polynomial[@spec(Double) C] { lhs =>
   def foreach[U](f: (Int, C) => U): Unit
 
   def foreachNonZero[U](f: (Int, C) => U)(implicit ring: Semiring[C], eq: Eq[C]): Unit =
-    foreach { (e, c) => if (c =!= ring.zero) f(e, c) }
+    foreach { (e, c) => if (c != ring.zero) f(e, c) }
 
   /**
    * Returns the coefficients in little-endian order. So, the i-th element is
@@ -1354,7 +1354,7 @@ sealed abstract class Rational extends ScalaNumber with ScalaNumericConversions 
   }
 
 
-  /*
+  
   def nroot(k: Int)(implicit ctxt: ApproximationContext[Rational]): Rational = if (k == 0) {
     Rational.one
   } else if (k < 0) {
@@ -1417,7 +1417,7 @@ sealed abstract class Rational extends ScalaNumber with ScalaNumericConversions 
       findNthRoot(high, 0)
     }
   }
-*/
+
   def sign: Sign = Sign(signum)
 
   def compareToOne: Int
@@ -1494,12 +1494,12 @@ object Rational extends RationalInstances {
   val zero: Rational = LongRational(0L, 1L)
   val one: Rational = LongRational(1L, 1L)
   
- /* def apply(n: SafeLong, d: SafeLong): Rational = {
+ def apply(n: SafeLong, d: SafeLong): Rational = {
     if (d < 0) return apply(-n, -d)
     val g = n gcd d
     (n / g).foldWith[Rational,LongRational,BigRational](d / g)(LongRational(_, _), BigRational(_, _))
   }
-*/
+
   def apply(n: Long, d: Long): Rational = LongRationals.build(n, d)
   def apply(n: BigInt, d: BigInt): Rational = BigRationals.build(n, d)
 
@@ -2135,7 +2135,7 @@ trait RationalInstances {
 
 trait RationalIsNRoot extends NRoot[Rational] with Serializable {
   implicit def context:ApproximationContext[Rational]
-  def nroot(a: Rational, k: Int): Rational = a.nroot(k)
+   def nroot(a: Rational, k: Int): Rational = a.nroot(k)
   def fpow(a: Rational, b: Rational): Rational = a.pow(b)
 }
 
@@ -2291,12 +2291,7 @@ sealed trait SafeLong extends ScalaNumber with ScalaNumericConversions with Orde
   def map(f: Long => Long, g: BigInt => BigInt): SafeLong =
     fold(x => SafeLongLong(f(x)), x => SafeLongBigInt(g(x)))
   
-  /**
-   * If `this` SafeLong is backed by a Long and `that` SafeLong is backed by
-   * a Long as well, then `f` will be called with both values. Otherwise,
-   * `this` and `that` will be converted to `BigInt`s and `g` will be called
-   * with these `BigInt`s.
-   */
+  
   def foldWith[A,B <: A,C <: A](that: SafeLong)(f: (Long,Long) => B, g: (BigInt,BigInt) => C): A =
     fold(x => that.fold(f(x, _), g(BigInt(x), _)), g(_, that.toBigInt))
 }
