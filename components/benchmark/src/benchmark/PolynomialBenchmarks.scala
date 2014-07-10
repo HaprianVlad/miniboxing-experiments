@@ -38,6 +38,8 @@ class PolynomialBenchmarks extends MyBenchmark {
    implicit object myFieldDouble extends Field[Double]
    implicit object myFieldRational extends Field[Rational]
    
+   
+   
 
   var spireDenseRationalPolys: Array[Polynomial[Rational]] = null
   var spireSparseRationalPolys: Array[Polynomial[Rational]] = null
@@ -1726,9 +1728,10 @@ trait Integral[@spec(Int,Long) A] extends EuclideanRing[A] with ConvertableFrom[
 }
 
 
+// TODO1: ERROR I don't know how to infere the implicit value integral: Integral[Long] value for this object definition 
  object LongRationals extends Rationals[Long]{
   import BigRationals.BigRational
-
+ 
 
   def build(n: Long, d: Long): Rational = {
     if (d == 0) throw new IllegalArgumentException("0 denominator")
@@ -1973,7 +1976,7 @@ trait Integral[@spec(Int,Long) A] extends EuclideanRing[A] with ConvertableFrom[
 
  object BigRationals extends Rationals[BigInt] {
   import LongRationals.LongRational
-
+  
   def build(n: BigInt, d: BigInt): Rational = {
     if (d == 0) throw new IllegalArgumentException("0 denominator")
     else if (d > 0) unsafeBuild(n, d)
