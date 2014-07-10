@@ -1847,8 +1847,17 @@ package object math {
   }
 
   final def pow(base: Double, exponent: Double) = Math.pow(base, exponent)
+  
+  //BigDecimal pow
+  implicit object myBigDecimal extends Trig[BigDecimal]
+  
+  final def pow(base: BigDecimal, exponent: BigDecimal) =
+    if (exponent.abs <= 99999999 && exponent.isWhole)
+      base.pow(exponent.toInt)
+    else
+      exp(log(base) * exponent)
 
-   /**
+  /**
    * sqrt
    */
   final def sqrt(x: Double): Double = Math.sqrt(x)
