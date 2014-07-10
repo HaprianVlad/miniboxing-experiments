@@ -31,18 +31,10 @@ class PolynomialBenchmarks extends MyBenchmark {
     Rational(nextLong(), if (d == 0L) 1L else d)
   }
   
-   implicit object myRingDouble extends Ring[Double]{
-    def zero = 0
-    def one = 1
-    def negate(x:Double) = -x
-    def plus(x:Double,y:Double) = x+y
-    def times(x:Double,n:Double) = x*n
-  }
-   implicit object myRingRational extends Ring[Rational]
+ 
    implicit object myEqDouble extends Eq[Double]
    implicit object myEqRational extends Eq[Rational]
-   implicit object mySemiRingDouble extends Semiring[Double]
-   implicit object mySemiRingRational extends Semiring[Rational]
+
    implicit object myFieldDouble extends Field[Double]
    implicit object myFieldRational extends Field[Rational]
    
@@ -289,8 +281,8 @@ object Term {
   def one[@spec(Float, Double) C](implicit r: Rig[C]): Term[C] =
     Term(r.one, 0)
 
-  private val IsZero = "0".r
-  private val IsNegative = "-(.*)".r
+   val IsZero = "0".r
+   val IsNegative = "-(.*)".r
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //PolySparse
@@ -345,7 +337,7 @@ case class PolySparse[@spec(Double) C]  (val exp: Array[Int], val coeff: Array[C
     }
   }
 
-  private final def expBits(x: C)(implicit ring: Semiring[C]): Array[C] = {
+   final def expBits(x: C)(implicit ring: Semiring[C]): Array[C] = {
     val bits = new Array[C](math.max(2, 32 - numberOfLeadingZeros(degree)))
     bits(0) = x
     // we use pow(2) here for the benefit of Interval[_], where
@@ -360,7 +352,7 @@ case class PolySparse[@spec(Double) C]  (val exp: Array[Int], val coeff: Array[C
   }
 
   @tailrec
-  private final def fastExp(bits: Array[C], e: Int, i: Int, acc: C)(implicit ring: Semiring[C]): C = {
+   final def fastExp(bits: Array[C], e: Int, i: Int, acc: C)(implicit ring: Semiring[C]): C = {
     if (e == 0) acc else {
       val lb = numberOfTrailingZeros(e) + 1
       val j = i + lb
@@ -369,7 +361,7 @@ case class PolySparse[@spec(Double) C]  (val exp: Array[Int], val coeff: Array[C
     }
   }
 
-  private final def fastExp(bits: Array[C], e: Int)(implicit ring: Semiring[C]): C = {
+   final def fastExp(bits: Array[C], e: Int)(implicit ring: Semiring[C]): C = {
     val lb = numberOfTrailingZeros(e) + 1
     fastExp(bits, e >>> lb, lb, bits(lb - 1))
   }
@@ -407,7 +399,8 @@ case class PolySparse[@spec(Double) C]  (val exp: Array[Int], val coeff: Array[C
       val e = exp(i)
       es(j) = e - 1
       
-      cs(j) = implicitly[Semiring[C]].times(e,coeff(i))
+      //TODO : pow instead of times
+      cs(j) = implicitly[Semiring[C]].pow(coeff(i),e)
       loop(i + 1, j + 1)
     }
 
@@ -503,7 +496,8 @@ object PolySparse {
 
   final def apply[@spec(Double) C: Semiring: Eq: ClassTag](data: Map[Int,C]): PolySparse[C] = {
     val data0 = data.toArray
-    data0.qsortBy(_._1)
+    //TODO: It was qsortby , modification
+    data0.sortBy(_._1)
     val es = new Array[Int](data0.length)
     val cs = new Array[C](data0.length)
     cFor.cfor(0)(_ < data0.length, _ + 1) { i =>
@@ -540,7 +534,7 @@ object PolySparse {
   final def zero[@spec(Double) C: Semiring: Eq: ClassTag]: PolySparse[C] =
     new PolySparse(new Array[Int](0), new Array[C](0))
 
-  private final def multiplyTerm[@spec(Double) C: Semiring: Eq: ClassTag](poly: PolySparse[C], c: C, e: Int): PolySparse[C] = {
+   final def multiplyTerm[@spec(Double) C: Semiring: Eq: ClassTag](poly: PolySparse[C], c: C, e: Int): PolySparse[C] = {
     val exp = poly.exp
     val coeff = poly.coeff
     val cs = new Array[C](coeff.length)
@@ -553,7 +547,7 @@ object PolySparse {
     new PolySparse(es, cs)
   }
 
-  private final def multiplySparse[@spec(Double) C: Semiring: Eq: ClassTag]
+   final def multiplySparse[@spec(Double) C: Semiring: Eq: ClassTag]
       (lhs: PolySparse[C], rhs: PolySparse[C]): PolySparse[C] = {
     val lexp = lhs.exp
     val lcoeff = lhs.coeff
@@ -564,7 +558,7 @@ object PolySparse {
     sum
   }
 
-  private final def countSumTerms[@spec(Double) C]
+   final def countSumTerms[@spec(Double) C]
       (lhs: PolySparse[C], rhs: PolySparse[C], lOffset: Int = 0, rOffset: Int = 0): Int = {
     val PolySparse(lexp, lcoeff) = lhs
     val PolySparse(rexp, rcoeff) = rhs
@@ -583,7 +577,7 @@ object PolySparse {
     loop(0, 0, 0)
   }
 
-  private final def addSparse[C: Eq: Semiring: ClassTag](lhs: PolySparse[C], rhs: PolySparse[C]): PolySparse[C] = {
+   final def addSparse[C: Eq: Semiring: ClassTag](lhs: PolySparse[C], rhs: PolySparse[C]): PolySparse[C] = {
     val PolySparse(lexp, lcoeff) = lhs
     val PolySparse(rexp, rcoeff) = rhs
 
@@ -626,7 +620,7 @@ object PolySparse {
     sum(0, 0, 0)
   }
 
-  private final def subtractScaled[C: Eq: Rng: ClassTag]
+   final def subtractScaled[C: Eq: Rng: ClassTag]
       (lhs: PolySparse[C], c: C, e: Int, rhs: PolySparse[C]) = {
     val PolySparse(lexp, lcoeff) = lhs
     val PolySparse(rexp, rcoeff) = rhs
@@ -642,9 +636,10 @@ object PolySparse {
         val ej = rexp(j) + e
         if (ei == ej) {
           es(k) = ei
-          //cs(k) = lcoeff(i) - c * rcoeff(j)
-          //TODO: see this comment
-          cs(k) =cs(0)
+         
+          cs(k) =  implicitly[Rng[C]].plus(lcoeff(i),implicitly[Rng[C]].negate(implicitly[Rng[C]].times(c, rcoeff(j))))
+          
+       
         
           loop(i + 1, j + 1, k + 1)
         } else if (ei < ej) {
@@ -653,7 +648,7 @@ object PolySparse {
           loop(i + 1, j, k + 1)
         } else {
           es(k) = ej
-          cs(k) = -c * rcoeff(j)
+          cs(k) = implicitly[Rng[C]].negate(implicitly[Rng[C]].times(c, rcoeff(j)))
           loop(i, j + 1, k + 1)
         }
       } else {
@@ -665,7 +660,7 @@ object PolySparse {
         }
         cFor.cfor(j)(_ < rexp.length, _ + 1) { j0 =>
           es(k0) = rexp(j0) + e
-          cs(k0) = -c * rcoeff(j0)
+          cs(k0) = implicitly[Rng[C]].negate(implicitly[Rng[C]].times(c, rcoeff(j0)))
           k0 += 1
         }
         PolySparse.safe(es, cs)
@@ -675,7 +670,7 @@ object PolySparse {
     loop(0, 0, 0)
   }
 
-  private final def quotmodSparse[@spec(Double) C: Field: Eq: ClassTag]
+   final def quotmodSparse[@spec(Double) C: Field: Eq: ClassTag]
       (lhs: PolySparse[C], rhs: PolySparse[C]): (PolySparse[C], PolySparse[C]) = {
     val rdegree = rhs.degree
     val rmaxCoeff = rhs.maxOrderTermCoeff
@@ -690,7 +685,8 @@ object PolySparse {
     @tailrec
     def loop(quot: List[Term[C]], rem: PolySparse[C]): (PolySparse[C], PolySparse[C]) =
       if (!rem.isZero && rem.degree >= rdegree) {
-        val c0 = rem.maxOrderTermCoeff / rmaxCoeff
+       
+        val c0 =  implicitly[Field[C]].quot(rem.maxOrderTermCoeff, rmaxCoeff)
         val e0 = rem.degree - rdegree
         loop(Term(c0, e0) :: quot, subtractScaled(rem, c0, e0, rhs))
       } else {
@@ -705,8 +701,8 @@ object PolySparse {
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //PolyDense
 
-class PolyDense[@spec(Double) C] private[spire] (val coeffs: Array[C])
-    (implicit val ct: ClassTag[C]) extends Polynomial[C] { lhs =>
+class PolyDense[@spec(Double) C]  (val coeffs: Array[C])
+    (implicit val ct: ClassTag[C]) extends Polynomial[C]  { lhs =>
 
   def degree: Int = if (isZero) 0 else coeffs.length - 1
 
@@ -825,7 +821,7 @@ class PolyDense[@spec(Double) C] private[spire] (val coeffs: Array[C])
     Polynomial.dense(cs)
   }
 
-  def /%(rhs: Polynomial[C])(implicit field: Field[C], eq: Eq[C]): (Polynomial[C], Polynomial[C]) = {
+ /* def /%(rhs: Polynomial[C])(implicit field: Field[C], eq: Eq[C]): (Polynomial[C], Polynomial[C]) = {
     def zipSum(lcs: Array[C], rcs: Array[C])(implicit r: Ring[C]): Array[C] =
       implicitly[Ring[Array[C]]].plus(lcs, rcs).tail
 
@@ -870,7 +866,7 @@ class PolyDense[@spec(Double) C] private[spire] (val coeffs: Array[C])
       eval(new Array[C](0), lhs.coeffs.reverse, lhs.degree - rhs.degree)
     }
   }
-
+*/
   def *: (k: C)(implicit ring: Semiring[C], eq: Eq[C]): Polynomial[C] =
     if (k == ring.zero) {
       Polynomial.dense(new Array[C](0))
@@ -885,7 +881,7 @@ class PolyDense[@spec(Double) C] private[spire] (val coeffs: Array[C])
 }
 
 object PolyDense {
-  private final def plusDense[C: Semiring: Eq: ClassTag](lhs: Polynomial[C], rhs: Polynomial[C]): Polynomial[C] = {
+   final def plusDense[C: Semiring: Eq: ClassTag](lhs: Polynomial[C], rhs: Polynomial[C]): Polynomial[C] = {
     val lcoeffs = lhs.coeffsArray
     val rcoeffs = rhs.coeffsArray
     if (lcoeffs.length < rcoeffs.length) {
@@ -953,11 +949,11 @@ object Polynomial extends PolynomialInstances {
   def twox[@spec(Double) C: Eq: Rig: ClassTag]: Polynomial[C] =
     linear( implicitly[Semiring[C]].plus(Rig[C].one,Rig[C].one))
 
-  private val termRe = "([0-9]+\\.[0-9]+|[0-9]+/[0-9]+|[0-9]+)?(?:([a-z])(?:\\^([0-9]+))?)?".r
+   val termRe = "([0-9]+\\.[0-9]+|[0-9]+/[0-9]+|[0-9]+)?(?:([a-z])(?:\\^([0-9]+))?)?".r
 
-  private val operRe = " *([+-]) *".r
+   val operRe = " *([+-]) *".r
 
-  private def parse(s: String): Polynomial[Rational] = {
+   def parse(s: String): Polynomial[Rational] = {
 
     // represents a term, plus a named variable v
     case class T(c: Rational, v: String, e: Int)
@@ -999,6 +995,8 @@ object Polynomial extends PolynomialInstances {
     if (vs.size > 1) throw new IllegalArgumentException("only univariate polynomials supported")
 
     // we're done!
+    implicit object semiringRational extends Semiring[Rational]
+    implicit object eqRational extends Eq[Rational]
     Polynomial(ts.map(t => (t.e, t.c)).toMap)
   }
 
@@ -1012,7 +1010,7 @@ object Polynomial extends PolynomialInstances {
     (es.result(), cs.result())
   }
 
-  def interpolate[C: Field: Eq: ClassTag](points: (C, C)*): Polynomial[C] = {
+/*  def interpolate[C: Field: Eq: ClassTag](points: (C, C)*): Polynomial[C] = {
     def loop(p: Polynomial[C], xs: List[C], pts: List[(C, C)]): Polynomial[C] =
       pts match {
         case Nil =>
@@ -1027,7 +1025,7 @@ object Polynomial extends PolynomialInstances {
           loop(p + c * prod, x :: xs, tail)
       }
     loop(Polynomial.zero[C], Nil, points.toList)
-  }
+  }*/
 }
 
 trait Polynomial[@spec(Double) C] { lhs =>
@@ -1311,6 +1309,8 @@ trait PolynomialInstances extends PolynomialInstances3
 
 //Rational
 
+
+
 sealed abstract class Rational extends ScalaNumber with ScalaNumericConversions with Ordered[Rational] { lhs =>
   import LongRationals.LongRational
   import BigRationals.BigRational
@@ -1507,8 +1507,8 @@ sealed abstract class Rational extends ScalaNumber with ScalaNumericConversions 
 
 
 object Rational extends RationalInstances {
-  private val RationalString = """^(-?\d+)/(-?\d+)$""".r
-  private val IntegerString = """^(-?\d+)$""".r
+   val RationalString = """^(-?\d+)/(-?\d+)$""".r
+   val IntegerString = """^(-?\d+)$""".r
 
   import LongRationals.LongRational
   import BigRationals.BigRational
@@ -1642,9 +1642,11 @@ object Rational extends RationalInstances {
 }
 
 
+trait Integral[@spec(Int,Long) A] extends EuclideanRing[A] with ConvertableFrom[A] with ConvertableTo[A] with IsReal[A]
 
-
-private abstract class Rationals[@specialized(Long) A](implicit integral: Integral[A]) {
+ abstract class Rationals[@specialized(Long) A](implicit integral: Integral[A]) {
+   import LongRationals._
+  import BigRationals._
   import integral._
 
   def build(n: A, d: A): Rational
@@ -1672,12 +1674,10 @@ private abstract class Rationals[@specialized(Long) A](implicit integral: Integr
       -((-this).toDouble)
     } else {
 
-      // We basically just shift n so that integer division gives us 54 bits of
-      // accuracy. We use the last bit for rounding, so end w/ 53 bits total.
-
+    
       val n = integral.toBigInt(num)
       val d = integral.toBigInt(den)
-
+    
       val sharedLength = Math.min(n.bitLength, d.bitLength)
       val dLowerLength = d.bitLength - sharedLength
 
@@ -1726,8 +1726,9 @@ private abstract class Rationals[@specialized(Long) A](implicit integral: Integr
 }
 
 
-private object LongRationals extends Rationals[Long] {
+ object LongRationals extends Rationals[Long]{
   import BigRationals.BigRational
+
 
   def build(n: Long, d: Long): Rational = {
     if (d == 0) throw new IllegalArgumentException("0 denominator")
@@ -1754,7 +1755,7 @@ private object LongRationals extends Rationals[Long] {
   }
 
   @SerialVersionUID(0L)
-  case class LongRational private (n: Long, d: Long) extends RationalLike with Serializable {
+  case class LongRational  (n: Long, d: Long) extends RationalLike with Serializable {
     def num: Long = n
     def den: Long = d
 
@@ -1970,7 +1971,7 @@ private object LongRationals extends Rationals[Long] {
 }
 
 
-private object BigRationals extends Rationals[BigInt] {
+ object BigRationals extends Rationals[BigInt] {
   import LongRationals.LongRational
 
   def build(n: BigInt, d: BigInt): Rational = {
@@ -1998,7 +1999,7 @@ private object BigRationals extends Rationals[BigInt] {
 
 
   @SerialVersionUID(0L)
-  case class BigRational private (n: BigInt, d: BigInt) extends RationalLike with Serializable {
+  case class BigRational  (n: BigInt, d: BigInt) extends RationalLike with Serializable {
     def num: BigInt = n
     def den: BigInt = d
 
@@ -2258,7 +2259,7 @@ sealed trait SafeLong extends ScalaNumber with ScalaNumericConversions with Orde
     _pow(SafeLong.one, this, rhs)
   }
 
-  @tailrec private final def _pow(total:SafeLong, base:SafeLong, exp:Int): SafeLong = {
+  @tailrec  final def _pow(total:SafeLong, base:SafeLong, exp:Int): SafeLong = {
     if (exp == 0) return total
     else if ((exp & 1) == 1) _pow(total * base, base * base, exp >> 1)
     else _pow(total, base * base, exp >> 1)
@@ -2269,7 +2270,7 @@ sealed trait SafeLong extends ScalaNumber with ScalaNumericConversions with Orde
     _modPow(SafeLong.one % mod, this, exp, mod)
   }
 
-  @tailrec private final def _modPow(total:SafeLong, base:SafeLong, exp:Int, mod:SafeLong): SafeLong = {
+  @tailrec  final def _modPow(total:SafeLong, base:SafeLong, exp:Int, mod:SafeLong): SafeLong = {
     if (exp == 0) return total
     else if ((exp & 1) == 1) _modPow((total * base) % mod, (base * base) % mod, exp >> 1, mod)
     else _modPow(total, (base * base) % mod, exp >> 1, mod)
@@ -2348,7 +2349,7 @@ object SafeLong extends SafeLongInstances {
 
 
 @SerialVersionUID(0L)
-private case class SafeLongLong private (x: Long) extends SafeLong with Serializable {
+ case class SafeLongLong  (x: Long) extends SafeLong with Serializable {
   def +(y: Long): SafeLong = {
     val a = x + y
 
@@ -2481,7 +2482,7 @@ private case class SafeLongLong private (x: Long) extends SafeLong with Serializ
 }
 
 @SerialVersionUID(0L)
-private case class SafeLongBigInt private (x: BigInt) extends SafeLong with Serializable {
+ case class SafeLongBigInt  (x: BigInt) extends SafeLong with Serializable {
   def +(y: Long): SafeLong = if ((x.signum ^ y) < 0) SafeLong(x + y) else SafeLongBigInt(x + y)
   def -(y: Long): SafeLong = if ((x.signum ^ y) < 0) SafeLongBigInt(x - y) else SafeLong(x - y)
   def *(y: Long): SafeLong = if (y == 0) SafeLongBigInt(0) else SafeLongBigInt(x * y)
@@ -2739,7 +2740,7 @@ sealed trait Number extends ScalaNumericConversions with Serializable {
 /**
  * Number with an underlying Long representation.
  */
-private case class IntNumber(n: SafeLong) extends Number { lhs =>
+ case class IntNumber(n: SafeLong) extends Number { lhs =>
 
   override def toString(): String = n.toString
 
@@ -2817,11 +2818,11 @@ private case class IntNumber(n: SafeLong) extends Number { lhs =>
     case t => t r_/% lhs
   }
 
-  private def r_-(lhs: Number) = lhs match {
+   def r_-(lhs: Number) = lhs match {
     case IntNumber(m) => IntNumber(m - n)
     case t => t - lhs
   }
-  private def r_/(lhs: Number) = lhs match {
+   def r_/(lhs: Number) = lhs match {
     case IntNumber(m) => n.fold(
       x => m.fold(
         y => Number(y.toDouble / x.toDouble),
@@ -2831,15 +2832,15 @@ private case class IntNumber(n: SafeLong) extends Number { lhs =>
     )
     case t => t / lhs
   }
-  private def r_/~(lhs: Number) = lhs match {
+   def r_/~(lhs: Number) = lhs match {
     case IntNumber(m) => IntNumber(m / n)
     case t => t /~ lhs
   }
-  private def r_%(lhs: Number) = lhs match {
+   def r_%(lhs: Number) = lhs match {
     case IntNumber(m) => IntNumber(m % n)
     case t => t % lhs
   }
-  private def r_/%(lhs: Number) = lhs match {
+   def r_/%(lhs: Number) = lhs match {
     case IntNumber(m) => (IntNumber(m / n), IntNumber(m % n))
     case t => t /% lhs
   }
@@ -2891,7 +2892,7 @@ private case class IntNumber(n: SafeLong) extends Number { lhs =>
   def round: Number = this
 }
 
-private case class FloatNumber(n: Double) extends Number { lhs =>
+ case class FloatNumber(n: Double) extends Number { lhs =>
 
   override def toString(): String = n.toString
 
@@ -2949,7 +2950,7 @@ private case class FloatNumber(n: Double) extends Number { lhs =>
     case FloatNumber(m) => Number(n - m)
     case t => t r_- lhs
   }
-  private def r_-(lhs: Number) = lhs match {
+   def r_-(lhs: Number) = lhs match {
     case IntNumber(m) => m.fold(x => Number(x - n), x => Number(BigDecimal(x) - BigDecimal(n)))
     case FloatNumber(m) => Number(m - n)
     case t => t - lhs
@@ -2987,7 +2988,7 @@ private case class FloatNumber(n: Double) extends Number { lhs =>
     case FloatNumber(m) => Number(n % m)
     case t => t.r_%(lhs)
   }
-  private def r_%(lhs: Number) = lhs match {
+   def r_%(lhs: Number) = lhs match {
     case IntNumber(m) => m.fold(
       x => Number(x % n),
       x => Number(BigDecimal(x) % n)
@@ -3001,7 +3002,7 @@ private case class FloatNumber(n: Double) extends Number { lhs =>
     case FloatNumber(m) => (Number(n / m), Number(n % m))
     case t => t r_/% lhs
   }
-  private def r_/%(lhs: Number) = lhs match {
+   def r_/%(lhs: Number) = lhs match {
     case IntNumber(m) => (Number(m.toDouble / n), Number(m.toDouble % n))
     case FloatNumber(m) => (Number(m / n), Number(m % n))
     case t => t /% lhs
@@ -3022,7 +3023,7 @@ private case class FloatNumber(n: Double) extends Number { lhs =>
 }
 
 
-private case class DecimalNumber(n: BigDecimal) extends Number { lhs =>
+ case class DecimalNumber(n: BigDecimal) extends Number { lhs =>
 
   override def toString(): String = n.toString
 
@@ -3072,7 +3073,7 @@ private case class DecimalNumber(n: BigDecimal) extends Number { lhs =>
   def r_/~(lhs: Number) = Number(lhs.toBigDecimal quot n)
   def r_%(lhs: Number) = Number(lhs.toBigDecimal % n)
 
-  private def tuplize(t: (BigDecimal, BigDecimal)) = (DecimalNumber(t._1), DecimalNumber(t._2))
+   def tuplize(t: (BigDecimal, BigDecimal)) = (DecimalNumber(t._1), DecimalNumber(t._2))
 
   def /%(rhs: Number) = {
     val t = n /% rhs.toBigDecimal
@@ -3105,7 +3106,7 @@ private case class DecimalNumber(n: BigDecimal) extends Number { lhs =>
   def round = Number(Math.round(n.toDouble))
 }
 
-private case class RationalNumber(n: Rational) extends Number { lhs =>
+ case class RationalNumber(n: Rational) extends Number { lhs =>
 
   override def toString(): String = n.toString
 
@@ -3155,7 +3156,7 @@ private case class RationalNumber(n: Rational) extends Number { lhs =>
   def r_/~(lhs: Number) = Number(lhs.toRational /~ n)
   def r_%(lhs: Number) = Number(lhs.toRational % n)
 
-  private def tuplize(t: (Rational, Rational)) = (RationalNumber(t._1), RationalNumber(t._2))
+   def tuplize(t: (Rational, Rational)) = (RationalNumber(t._1), RationalNumber(t._2))
 
   def /%(rhs: Number) = {
     val t = n /% rhs.toRational
