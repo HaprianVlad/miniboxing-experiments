@@ -32,11 +32,39 @@ class PolynomialBenchmarks extends MyBenchmark {
   }
   
  
-   implicit object myEqDouble extends Eq[Double]
-   implicit object myEqRational extends Eq[Rational]
+   implicit object myEqDouble extends Eq[Double]{
+     def eqv(x:Double,y:Double):Boolean = x==y
+   }
+   implicit object myEqRational extends Eq[Rational]{
+      def eqv(x:Rational,y:Rational):Boolean = x==y
+   }
 
-   implicit object myFieldDouble extends Field[Double]
-   implicit object myFieldRational extends Field[Rational]
+   implicit object myFieldDouble extends Field[Double]{
+    def one = 1
+	def zero = 0
+	def inverse(a:Double):Double = -a
+	def negate(x:Double):Double = -x
+	def plus(x:Double,y:Double) = x+y
+	def div(x:Double,y:Double):Double = x/y
+    def times(x:Double,y:Double):Double = x*y
+	def quot (x:Double,y:Double)= x/y		
+	def gcd (x:Double,y:Double)= math.gcd(x, y)	
+	def mod (x:Double,y:Double)= x%y	
+     
+   }
+   implicit object myFieldRational extends Field[Rational]{
+       def one = 1
+	def zero = 0
+	def inverse(a:Rational):Rational = -a
+	def negate(x:Rational):Rational = -x
+	def plus(x:Rational,y:Rational) = x+y
+	def div(x:Rational,y:Rational):Rational = x/y
+    def times(x:Rational,y:Rational):Rational = x*y
+	def quot (x:Rational,y:Rational)= x/y		
+	def gcd (x:Rational,y:Rational)= math.gcd(x, y)	
+	def mod (x:Rational,y:Rational)= x%y	
+     
+   }
    
    
    
@@ -823,8 +851,9 @@ class PolyDense[@spec(Double) C]  (val coeffs: Array[C])
     Polynomial.dense(cs)
   }
 
- /* def /%(rhs: Polynomial[C])(implicit field: Field[C], eq: Eq[C]): (Polynomial[C], Polynomial[C]) = {
-    def zipSum(lcs: Array[C], rcs: Array[C])(implicit r: Ring[C]): Array[C] =
+  //TODO : Modified implementation of this method
+  def /%(rhs: Polynomial[C])(implicit field: Field[C], eq: Eq[C]): (Polynomial[C], Polynomial[C]) = ???
+  /*  def zipSum(lcs: Array[C], rcs: Array[C])(implicit r: Ring[C]): Array[C] =
       implicitly[Ring[Array[C]]].plus(lcs, rcs).tail
 
     def polyFromCoeffsLE(cs: Array[C]): Polynomial[C] =
@@ -997,8 +1026,20 @@ object Polynomial extends PolynomialInstances {
     if (vs.size > 1) throw new IllegalArgumentException("only univariate polynomials supported")
 
     // we're done!
-    implicit object semiringRational extends Semiring[Rational]
-    implicit object eqRational extends Eq[Rational]
+    implicit object semiringRational extends Semiring[Rational]{
+      	def zero = 0
+      	def plus(x:Rational,y:Rational) = x+y
+      	def times(x:Rational,y:Rational):Rational = x*y
+    }
+   
+     implicit object eqRational extends Eq[Rational]{
+      def eqv(x:Rational,y:Rational):Boolean = x==y
+   }
+
+ 
+    
+    
+    
     Polynomial(ts.map(t => (t.e, t.c)).toMap)
   }
 
@@ -2580,10 +2621,20 @@ trait SafeLongIsEuclideanRing extends EuclideanRing[SafeLong] with SafeLongIsRin
 }
 
   
-  
+  //TODO:SEE this two implementations
  trait SafeLongIsNRoot extends NRoot[SafeLong] {
-  implicit object nRootLong extends NRoot[Long]
-  implicit object nRootBiGInt extends NRoot[BigInt]
+  implicit object nRootLong extends NRoot[Long]{
+    def fpow(x:Long,y:Long) = math.pow(x,y)
+    
+      def nroot(x:Long,n:Int) = if (n==0) 1 
+      else if (n == 1) x 
+      else nroot(sqrt(x),n-2)
+    
+  }
+  implicit object nRootBiGInt extends NRoot[BigInt]{
+     def fpow(x:BigInt,y:BigInt) = x.pow(y.toInt)
+     def nroot(x:BigInt,n:Int) =  sqrt(x)
+   }
   def nroot(a: SafeLong, k: Int): SafeLong = a.fold(
     n => SafeLong(NRoot[Long].nroot(n, k)),
     n => SafeLong(NRoot[BigInt].nroot(n, k))
@@ -2817,7 +2868,7 @@ sealed trait Number extends ScalaNumericConversions with Serializable {
     case IntNumber(m) => IntNumber(n % m)
     case t => t r_% lhs
   }
-  def /%(rhs: Number) = rhs match {
+  def /%(rhs: Number) = rhs match {//
     case IntNumber(m) => (IntNumber(n / m), IntNumber(n % m))
     case t => t r_/% lhs
   }
