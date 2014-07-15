@@ -1848,8 +1848,9 @@ package object math {
   final def pow(base: Double, exponent: Double) = Math.pow(base, exponent)
   
   //BigDecimal pow
-  implicit object myBigDecimal extends Trig[BigDecimal]
-  
+  //implicit object myBigDecimal extends Trig[BigDecimal]
+  // TODO: ??? used instead of myBigDecimal
+  implicit val x = ???
   final def pow(base: BigDecimal, exponent: BigDecimal) =
     if (exponent.abs <= 99999999 && exponent.isWhole)
       base.pow(exponent.toInt)

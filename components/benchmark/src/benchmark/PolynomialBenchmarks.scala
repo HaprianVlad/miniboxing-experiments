@@ -1607,7 +1607,9 @@ object Rational extends RationalInstances {
     case RationalString(n, d) => Rational(BigInt(n), BigInt(d))
     case IntegerString(n) => Rational(BigInt(n))
     case s => try {
-      Rational(BigDecimal(s))
+     /// Rational(BigDecimal(s))
+     /// TODO: Strange error of compilation, ??? added instead of right version
+    ???
     } catch {
       case nfe: NumberFormatException => throw new NumberFormatException("For input string: " + s)
     }
