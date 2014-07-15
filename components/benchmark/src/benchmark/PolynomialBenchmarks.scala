@@ -2100,7 +2100,7 @@ object myBigInt extends Integral[BigInt]{
    def fromByte(n: Byte): BigInt =BigInt(n)
    def fromDouble(n: Double): BigInt =BigInt(n.toInt)
    def fromFloat(n: Float): BigInt =BigInt(n.toInt)
-   def fromBigInt(n: BigInt): BigInt =BigInt(n.toInt)
+   def fromBigInt(n: BigInt): BigInt =n
    def fromShort(n: Short): BigInt = BigInt(n.toInt)
    // Members declared in benchmark.EuclideanRing
    def gcd(a: BigInt,b: BigInt): BigInt = math.gcd(a,b)
@@ -2127,6 +2127,13 @@ object myBigInt extends Integral[BigInt]{
    def abs(a: BigInt): BigInt = BigInt(Math.abs(a.toDouble).toInt)
    def signum(a: BigInt): Int = Math.signum(a.toDouble).toInt 
   
+     // Members declared in benchmark.ConvertableFrom
+   def toLong(a: BigInt): Long = a.toLong
+   
+   // Members declared in benchmark.ConvertableTo
+   def fromLong(n: Long): BigInt = BigInt(n)
+
+   
 } 
 
  object BigRationals extends Rationals[BigInt]()(myBigInt) {
