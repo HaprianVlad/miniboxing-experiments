@@ -1608,7 +1608,7 @@ object Rational extends RationalInstances {
     case IntegerString(n) => Rational(BigInt(n))
     case s => try {
      /// Rational(BigDecimal(s))
-     /// TODO: Strange error of compilation, ??? added instead of right version
+     /// TODO: Strange error of compilation, ??? added instead of right implementation
     ???
     } catch {
       case nfe: NumberFormatException => throw new NumberFormatException("For input string: " + s)
@@ -1772,9 +1772,65 @@ trait Integral[@spec(Int,Long) A] extends EuclideanRing[A] with ConvertableFrom[
 
 
 
-//object myLong extends Integral[Long] 
-//TODO: ??? solution found
-object LongRationals extends Rationals[Long]()(???){
+object myLong extends Integral[Long] {
+    // Members declared in benchmark.AdditiveGroup
+   def negate(x: Long): Long = -x
+   
+   // Members declared in benchmark.AdditiveMonoid
+   def zero: Long = 0
+   
+   // Members declared in benchmark.AdditiveSemigroup
+   def plus(x: Long,y: Long): Long = x+y
+   
+   // Members declared in benchmark.ConvertableFrom
+   def toBigDecimal(a: Long): BigDecimal = BigDecimal(a)
+   def toBigInt(a: Long): BigInt = BigInt(a)
+   def toByte(a: Long): Byte = a.toByte
+   def toFloat(a: Long): Float = a.toFloat
+   def toInt(a: Long): Int = a.toInt
+   def toLong(a: Long): Long = a.toLong
+   def toNumber(a: Long): benchmark.Number = Number(a)
+   def toRational(a: Long): benchmark.Rational = Rational(a)
+   def toShort(a: Long): Short = a.toShort
+   def toString(a: Long): String = a.toString
+   
+   // Members declared in benchmark.ConvertableTo
+   def fromByte(n: Byte): Long = n.toLong
+   def fromDouble(n: Double): Long = n.toLong
+   def fromFloat(n: Float): Long = n.toLong
+   def fromLong(n: Long): Long =n.toLong
+   def fromShort(n: Short): Long = n.toLong
+   
+   // Members declared in benchmark.EuclideanRing
+   def gcd(a: Long,b: Long): Long = math.gcd(a,b)
+   def mod(a: Long,b: Long): Long = a%b
+   def quot(a: Long,b: Long): Long = a/b
+   
+   // Members declared in benchmark.IsReal
+   def ceil(a: Long): Long = Math.ceil(a.toDouble).toLong
+   def floor(a: Long): Long = Math.floor(a.toDouble).toLong
+   def isWhole(a: Long): Boolean =  a == round(a)
+   def round(a: Long): Long =  Math.round(a.toDouble).toLong
+   def toDouble(a: Long): Double = a.toDouble
+   
+   // Members declared in benchmark.MultiplicativeMonoid
+   def one: Long = 1
+   
+   // Members declared in benchmark.MultiplicativeSemigroup
+   def times(x: Long,y: Long): Long = x*y
+   
+   // Members declared in benchmark.Order
+   def compare(x: Long,y: Long): Int = if(x<y) -1 else if (x==y) 0 else 1
+   
+   // Members declared in benchmark.Signed
+   def abs(a: Long): Long = Math.abs(a.toDouble).toLong
+   def signum(a: Long): Int = Math.signum(a.toDouble).toInt
+
+  
+  
+}
+
+object LongRationals extends Rationals[Long]()(myLong){
   import BigRationals.BigRational
  
 
@@ -2018,9 +2074,62 @@ object LongRationals extends Rationals[Long]()(???){
   }
 }
 
-//object myBigInt extends Integral[BigInt] 
-//TODO : ??? solution found
- object BigRationals extends Rationals[BigInt]()(???) {
+object myBigInt extends Integral[BigInt]{
+    // Members declared in benchmark.AdditiveGroup
+   def negate(x: BigInt): BigInt = -x
+   
+   // Members declared in benchmark.AdditiveMonoid
+   def zero: BigInt = 0
+   
+   // Members declared in benchmark.AdditiveSemigroup
+   def plus(x: BigInt,y: BigInt): BigInt = x+y
+   
+   // Members declared in benchmark.ConvertableFrom
+   def toBigDecimal(a: BigInt): BigDecimal = BigDecimal(a)
+   def toBigInt(a: BigInt): BigInt = a
+   def toByte(a: BigInt): Byte = a.toByte
+   def toFloat(a: BigInt): Float = a.toFloat
+   def toInt(a: BigInt): Int = a.toInt
+  
+   def toNumber(a: BigInt): benchmark.Number = Number(a)
+   def toRational(a: BigInt): benchmark.Rational = Rational(a)
+   def toShort(a: BigInt): Short = a.toShort
+   def toString(a: BigInt): String = a.toString
+   
+   // Members declared in benchmark.ConvertableTo
+   def fromByte(n: Byte): BigInt =BigInt(n)
+   def fromDouble(n: Double): BigInt =BigInt(n.toInt)
+   def fromFloat(n: Float): BigInt =BigInt(n.toInt)
+   def fromBigInt(n: BigInt): BigInt =BigInt(n.toInt)
+   def fromShort(n: Short): BigInt = BigInt(n.toInt)
+   // Members declared in benchmark.EuclideanRing
+   def gcd(a: BigInt,b: BigInt): BigInt = math.gcd(a,b)
+   def mod(a: BigInt,b: BigInt): BigInt = a%b
+   def quot(a: BigInt,b: BigInt): BigInt = a/b
+   
+   // Members declared in benchmark.IsReal
+   def ceil(a: BigInt): BigInt = BigInt(Math.ceil(a.toDouble).toInt)
+   def floor(a: BigInt): BigInt = BigInt(Math.floor(a.toDouble).toInt)
+   def isWhole(a: BigInt): Boolean =  a == round(a)
+   def round(a: BigInt): BigInt =  BigInt(Math.round(a.toDouble))
+   def toDouble(a: BigInt): Double = a.toDouble
+   
+   // Members declared in benchmark.MultiplicativeMonoid
+   def one: BigInt = 1
+   
+   // Members declared in benchmark.MultiplicativeSemigroup
+   def times(x: BigInt,y: BigInt): BigInt = x*y
+   
+   // Members declared in benchmark.Order
+   def compare(x: BigInt,y: BigInt): Int = if(x<y) -1 else if (x==y) 0 else 1
+   
+   // Members declared in benchmark.Signed
+   def abs(a: BigInt): BigInt = BigInt(Math.abs(a.toDouble).toInt)
+   def signum(a: BigInt): Int = Math.signum(a.toDouble).toInt 
+  
+} 
+
+ object BigRationals extends Rationals[BigInt]()(myBigInt) {
   import LongRationals.LongRational
   
   def build(n: BigInt, d: BigInt): Rational = {

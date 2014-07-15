@@ -1848,9 +1848,27 @@ package object math {
   final def pow(base: Double, exponent: Double) = Math.pow(base, exponent)
   
   //BigDecimal pow
-  //implicit object myBigDecimal extends Trig[BigDecimal]
-  // TODO: ??? used instead of myBigDecimal
-  implicit val x = ???
+  implicit object myBigDecimal extends Trig[BigDecimal]{
+   def acos(a: BigDecimal): BigDecimal =  Math.acos(a.toDouble)
+   def asin(a: BigDecimal): BigDecimal =  Math.acos(a.toDouble)
+   def atan(a: BigDecimal): BigDecimal =  Math.acos(a.toDouble)
+   def atan2(y: BigDecimal,x: BigDecimal): BigDecimal =  Math.atan2(x.toDouble, y.toDouble)
+   def cos(a: BigDecimal): BigDecimal = Math.cos(a.toDouble)
+   def cosh(x: BigDecimal): BigDecimal =  Math.cosh(x.toDouble)
+   def e: BigDecimal = 1
+   def exp(a: BigDecimal): BigDecimal =  Math.exp(a.toDouble)
+   def expm1(a: BigDecimal): BigDecimal =  Math.expm1(a.toDouble)
+   def log(a: BigDecimal): BigDecimal = Math.log(a.toDouble)
+   def log1p(a: BigDecimal): BigDecimal = Math.log1p(a.toDouble)
+   def pi: BigDecimal = 3.14
+   def sin(a: BigDecimal): BigDecimal = Math.sin(a.toDouble)
+   def sinh(x: BigDecimal): BigDecimal = Math.sinh(x.toDouble)
+   def tan(a: BigDecimal): BigDecimal = Math.tan(a.toDouble)
+   def tanh(x: BigDecimal): BigDecimal = Math.tanh(x.toDouble)
+   def toDegrees(a: BigDecimal): BigDecimal = Math.toDegrees(a.toDouble)
+   def toRadians(a: BigDecimal): BigDecimal = Math.toRadians(a.toDouble)
+
+  }
   final def pow(base: BigDecimal, exponent: BigDecimal) =
     if (exponent.abs <= 99999999 && exponent.isWhole)
       base.pow(exponent.toInt)
