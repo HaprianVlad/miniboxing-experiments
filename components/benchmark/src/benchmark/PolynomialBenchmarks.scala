@@ -1729,7 +1729,8 @@ trait Integral[@spec(Int,Long) A] extends EuclideanRing[A] with ConvertableFrom[
 
 
 // TODO1: ERROR I don't know how to infere the implicit value integral: Integral[Long] value for this object definition 
- object LongRationals extends Rationals[Long]{
+object myLong extends Integral[Long] 
+object LongRationals extends Rationals[Long]()(myLong){
   import BigRationals.BigRational
  
 
@@ -1973,8 +1974,8 @@ trait Integral[@spec(Int,Long) A] extends EuclideanRing[A] with ConvertableFrom[
   }
 }
 
-
- object BigRationals extends Rationals[BigInt] {
+object myBigInt extends Integral[BigInt] 
+ object BigRationals extends Rationals[BigInt]()(myBigInt) {
   import LongRationals.LongRational
   
   def build(n: BigInt, d: BigInt): Rational = {
