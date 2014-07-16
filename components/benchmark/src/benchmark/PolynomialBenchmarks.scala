@@ -429,8 +429,8 @@ case class PolySparse[@spec(Double) C]  (val exp: Array[Int], val coeff: Array[C
       val e = exp(i)
       es(j) = e - 1
       
-      //TODO : pow instead of times
-      cs(j) = implicitly[Semiring[C]].pow(coeff(i),e)
+      //TODO : see the fromInt method, should work corectly
+      cs(j) = implicitly[Ring[C]].times(coeff(i),implicitly[Ring[C]].fromInt(e))
       loop(i + 1, j + 1)
     }
 
