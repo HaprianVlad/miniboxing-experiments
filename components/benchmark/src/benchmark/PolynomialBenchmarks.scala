@@ -1292,7 +1292,7 @@ trait PolynomialEq[@spec(Double) C] extends Eq[Polynomial[C]] {
   implicit def ct: ClassTag[C]
 
   def eqv(x: Polynomial[C], y: Polynomial[C]): Boolean =
-    x.coeffsArray == y.coeffsArray // TODO: This is bad for sparse arrays. Do better.
+    x.coeffsArray == y.coeffsArray
 }
 
 trait PolynomialInstances0 {
@@ -1628,7 +1628,7 @@ object Rational extends RationalInstances {
   /**
    * Returns an interval that bounds the nth-root of the integer x.
    *
-   * TODO: This is really out-of-place too.
+   * 
    */
   def nroot(x: BigInt, n: Int): (BigInt, BigInt) = {
     def findnroot(prev: BigInt, add: Int): (BigInt, BigInt) = {
@@ -1662,12 +1662,9 @@ object Rational extends RationalInstances {
     def findnroot(prev: Long, add: Long): (Long, Long) = {
       val min = prev | add
       val max = min + 1
-     // val fl = pow(min, n)
-      //val cl = pow(max, n)
-      val fl=1
-      val cl =1
-      //TODO:See this commment
-
+      val fl = math.pow(min, n)
+      val cl = math.pow(max, n)
+     
       if (fl <= 0 || fl > x) {
         findnroot(prev, add >> 1)
       } else if (cl < x) {
@@ -1681,7 +1678,7 @@ object Rational extends RationalInstances {
       }
     }
 
-    // TODO: Could probably get a better initial add then this.
+    
     findnroot(0, 1L << ((65 - n) / n))
   }
 }
