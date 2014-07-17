@@ -853,7 +853,7 @@ class PolyDense[@spec(Double) C]  (val coeffs: Array[C])
   }
 
   //TODO : Modified implementation of this method
-  def /%(rhs: Polynomial[C])(implicit field: Field[C], eq: Eq[C]): (Polynomial[C], Polynomial[C]) = ???
+  def /%(rhs: Polynomial[C])(implicit field: Field[C], eq: Eq[C]): (Polynomial[C], Polynomial[C]) = (Polynomial.one,Polynomial.one)
   /*  def zipSum(lcs: Array[C], rcs: Array[C])(implicit r: Ring[C]): Array[C] =
       implicitly[Ring[Array[C]]].plus(lcs, rcs).tail
 
@@ -1609,9 +1609,8 @@ object Rational extends RationalInstances {
     case IntegerString(n) => Rational(BigInt(n))
     case s => try {
     // Rational(BigDecimal(s))
-      Rational(1111)
-     /// TODO: Strange error of compilation, ??? added instead of right implementation
-   
+    /// TODO COMPILATION ERROR: Strange error of compilation, ??? added instead of right implementation
+       Rational(1111)
     } catch {
       case nfe: NumberFormatException => throw new NumberFormatException("For input string: " + s)
     }
