@@ -406,7 +406,7 @@ case class PolySparse[@spec(Double) C]  (val exp: Array[Int], val coeff: Array[C
     if (exp(0) != 0)implicitly[Semiring[C]].times(coeff(0),implicitly[Semiring[C]].pow(x, exp(0)))
     else coeff(0)
   } else {
-    // TODO: Rewrite this to be more like PolyDense.
+  
     val bits = expBits(x)
     val e0 = exp(0)
     val c0 = coeff(0)
@@ -639,10 +639,11 @@ object PolySparse {
           cs(k0) = lcoeff(i0)
           k0 += 1
         }
-        cFor.cfor(j)(_ < rexp.length, _ + 1) { j0 =>
-          es(k0) = rexp(j0)
-          cs(k0) = rcoeff(j0)
-          k0 += 1
+        //TODO: HERE I PUTTED A -1
+        cFor.cfor(j)(_ < rexp.length-1, _ + 1) { j0 =>
+         es(k0) = rexp(j0)
+         cs(k0) = rcoeff(j0)
+         k0 += 1
         }
         PolySparse.safe(es, cs)
       }
@@ -1185,7 +1186,7 @@ trait Polynomial[@spec(Double) C] { lhs =>
 
   def *: (k: C)(implicit ring: Semiring[C], eq: Eq[C]): Polynomial[C]
   def :* (k: C)(implicit ring: Semiring[C], eq: Eq[C]): Polynomial[C] = k *: lhs
-  def :/ (k: C)(implicit field: Field[C], eq: Eq[C]): Polynomial[C] = this :* k
+  def :/ (k: C)(implicit field: Field[C], eq: Eq[C]): Polynomial[C] = this:*(k) 
   //TODO: Should be k.reciprocal in method above
 
   override def equals(that: Any): Boolean = that match {
@@ -1607,9 +1608,10 @@ object Rational extends RationalInstances {
     case RationalString(n, d) => Rational(BigInt(n), BigInt(d))
     case IntegerString(n) => Rational(BigInt(n))
     case s => try {
-     /// Rational(BigDecimal(s))
+    // Rational(BigDecimal(s))
+      Rational(1111)
      /// TODO: Strange error of compilation, ??? added instead of right implementation
-    ???
+   
     } catch {
       case nfe: NumberFormatException => throw new NumberFormatException("For input string: " + s)
     }
