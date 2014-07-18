@@ -12,7 +12,7 @@ import scala.collection.mutable.ArrayBuilder
 import scala.annotation.tailrec
 import scala.reflect.ClassTag
 import scala.{specialized => spec}
-import scala.{specialized => sp}
+
 import java.lang.Long.{ numberOfTrailingZeros, numberOfLeadingZeros }
 import scala.math.{ScalaNumber, ScalaNumericConversions}
 import java.lang.Math
@@ -70,10 +70,10 @@ class PolynomialBenchmarks extends MyBenchmark {
    
    
 
-  var spireDenseRationalPolys: Array[Polynomial[Rational]] = null
-  var spireSparseRationalPolys: Array[Polynomial[Rational]] = null
-  var spireDenseDoublePolys: Array[Polynomial[Double]] = null
-  var spireSparseDoublePolys: Array[Polynomial[Double]] = null
+  var specializedireDenseRationalPolys: Array[Polynomial[Rational]] = null
+  var specializedireSparseRationalPolys: Array[Polynomial[Rational]] = null
+  var specializedireDenseDoublePolys: Array[Polynomial[Double]] = null
+  var specializedireSparseDoublePolys: Array[Polynomial[Double]] = null
   var commonsDoublePolys: Array[PolynomialFunction] = null
 
   override protected def setUp() {
@@ -81,10 +81,10 @@ class PolynomialBenchmarks extends MyBenchmark {
     val coeffs: Array[Array[Rational]] =
       init(100)(init(size)(arbitraryRational))
 
-    spireDenseRationalPolys = coeffs.map(cs => Polynomial.dense(cs))
-    spireSparseRationalPolys = spireDenseRationalPolys.map(_.toSparse)
-    spireDenseDoublePolys = coeffs.map(cs => Polynomial.dense(cs.map(_.toDouble)))
-    spireSparseDoublePolys = spireDenseDoublePolys.map(_.toSparse)
+    specializedireDenseRationalPolys = coeffs.map(cs => Polynomial.dense(cs))
+    specializedireSparseRationalPolys = specializedireDenseRationalPolys.map(_.toSparse)
+    specializedireDenseDoublePolys = coeffs.map(cs => Polynomial.dense(cs.map(_.toDouble)))
+    specializedireSparseDoublePolys = specializedireDenseDoublePolys.map(_.toSparse)
     commonsDoublePolys = coeffs.map(cs => new PolynomialFunction(cs.map(_.toDouble)))
   }
 
@@ -203,34 +203,34 @@ class PolynomialBenchmarks extends MyBenchmark {
     total
   }
 
-  def timeAddSpireRationalPolysSparse(reps: Int) = run(reps)(addSpireRationalPolynomials(spireSparseRationalPolys))
-  def timeAddSpireRationalPolysDense(reps: Int) = run(reps)(addSpireRationalPolynomials(spireDenseRationalPolys))
-  def timeAddSpireDoublePolysSparse(reps: Int) = run(reps)(addSpireDoublePolynomials(spireSparseDoublePolys))
-  def timeAddSpireDoublePolysDense(reps: Int) = run(reps)(addSpireDoublePolynomials(spireDenseDoublePolys))
+  def timeAddSpireRationalPolysSparse(reps: Int) = run(reps)(addSpireRationalPolynomials(specializedireSparseRationalPolys))
+  def timeAddSpireRationalPolysDense(reps: Int) = run(reps)(addSpireRationalPolynomials(specializedireDenseRationalPolys))
+  def timeAddSpireDoublePolysSparse(reps: Int) = run(reps)(addSpireDoublePolynomials(specializedireSparseDoublePolys))
+  def timeAddSpireDoublePolysDense(reps: Int) = run(reps)(addSpireDoublePolynomials(specializedireDenseDoublePolys))
   def timeAddCommonsDoublePolynomials(reps: Int) = run(reps)(addCommonsDoublePolynomials(commonsDoublePolys))
 
-  def timeMultiplySpireRationalPolysSparse(reps: Int) = run(reps)(multiplySpireRationalPolynomials(spireSparseRationalPolys))
-  def timeMultiplySpireRationalPolysDense(reps: Int) = run(reps)(multiplySpireRationalPolynomials(spireDenseRationalPolys))
-  def timeMultiplySpireDoublePolysSparse(reps: Int) = run(reps)(multiplySpireDoublePolynomials(spireSparseDoublePolys))
-  def timeMultiplySpireDoublePolysDense(reps: Int) = run(reps)(multiplySpireDoublePolynomials(spireDenseDoublePolys))
+  def timeMultiplySpireRationalPolysSparse(reps: Int) = run(reps)(multiplySpireRationalPolynomials(specializedireSparseRationalPolys))
+  def timeMultiplySpireRationalPolysDense(reps: Int) = run(reps)(multiplySpireRationalPolynomials(specializedireDenseRationalPolys))
+  def timeMultiplySpireDoublePolysSparse(reps: Int) = run(reps)(multiplySpireDoublePolynomials(specializedireSparseDoublePolys))
+  def timeMultiplySpireDoublePolysDense(reps: Int) = run(reps)(multiplySpireDoublePolynomials(specializedireDenseDoublePolys))
   def timeMultiplyCommonsDoublePolynomials(reps: Int) = run(reps)(multiplyCommonsDoublePolynomials(commonsDoublePolys))
   
-  def timeDerivativeSpireRationalPolysSparse(reps: Int) = run(reps)(derivativeSpireRationalPolynomials(spireSparseRationalPolys))
-  def timeDerivativeSpireRationalPolysDense(reps: Int) = run(reps)(derivativeSpireRationalPolynomials(spireDenseRationalPolys))
-  def timeDerivativeSpireDoublePolysSparse(reps: Int) = run(reps)(derivativeSpireDoublePolynomials(spireSparseDoublePolys))
-  def timeDerivativeSpireDoublePolysDense(reps: Int) = run(reps)(derivativeSpireDoublePolynomials(spireDenseDoublePolys))
+  def timeDerivativeSpireRationalPolysSparse(reps: Int) = run(reps)(derivativeSpireRationalPolynomials(specializedireSparseRationalPolys))
+  def timeDerivativeSpireRationalPolysDense(reps: Int) = run(reps)(derivativeSpireRationalPolynomials(specializedireDenseRationalPolys))
+  def timeDerivativeSpireDoublePolysSparse(reps: Int) = run(reps)(derivativeSpireDoublePolynomials(specializedireSparseDoublePolys))
+  def timeDerivativeSpireDoublePolysDense(reps: Int) = run(reps)(derivativeSpireDoublePolynomials(specializedireDenseDoublePolys))
   def timeDerivativeCommonsDoublePolynomials(reps: Int) = run(reps)(derivativeCommonsDoublePolynomials(commonsDoublePolys))
   
-  def timeEvaluateSpireRationalPolysSparse(reps: Int) = run(reps)(evaluateSpireRationalPolynomials(spireSparseRationalPolys))
-  def timeEvaluateSpireRationalPolysDense(reps: Int) = run(reps)(evaluateSpireRationalPolynomials(spireDenseRationalPolys))
-  def timeEvaluateSpireDoublePolysSparse(reps: Int) = run(reps)(evaluateSpireDoublePolynomials(spireSparseDoublePolys))
-  def timeEvaluateSpireDoublePolysDense(reps: Int) = run(reps)(evaluateSpireDoublePolynomials(spireDenseDoublePolys))
+  def timeEvaluateSpireRationalPolysSparse(reps: Int) = run(reps)(evaluateSpireRationalPolynomials(specializedireSparseRationalPolys))
+  def timeEvaluateSpireRationalPolysDense(reps: Int) = run(reps)(evaluateSpireRationalPolynomials(specializedireDenseRationalPolys))
+  def timeEvaluateSpireDoublePolysSparse(reps: Int) = run(reps)(evaluateSpireDoublePolynomials(specializedireSparseDoublePolys))
+  def timeEvaluateSpireDoublePolysDense(reps: Int) = run(reps)(evaluateSpireDoublePolynomials(specializedireDenseDoublePolys))
   def timeEvaluateCommonsDoublePolynomials(reps: Int) = run(reps)(evaluateCommonsDoublePolynomials(commonsDoublePolys))
 
-  def timeQuotModSpireRationalPolysSparse(reps: Int) = run(reps)(quotModSpireRationalPolynomials(spireSparseRationalPolys))
-  def timeQuotModSpireRationalPolysDense(reps: Int) = run(reps)(quotModSpireRationalPolynomials(spireDenseRationalPolys))
-  def timeQuotModSpireDoublePolysSparse(reps: Int) = run(reps)(quotModSpireDoublePolynomials(spireSparseDoublePolys))
-  def timeQuotModSpireDoublePolysDense(reps: Int) = run(reps)(quotModSpireDoublePolynomials(spireDenseDoublePolys))
+  def timeQuotModSpireRationalPolysSparse(reps: Int) = run(reps)(quotModSpireRationalPolynomials(specializedireSparseRationalPolys))
+  def timeQuotModSpireRationalPolysDense(reps: Int) = run(reps)(quotModSpireRationalPolynomials(specializedireDenseRationalPolys))
+  def timeQuotModSpireDoublePolysSparse(reps: Int) = run(reps)(quotModSpireDoublePolynomials(specializedireSparseDoublePolys))
+  def timeQuotModSpireDoublePolysDense(reps: Int) = run(reps)(quotModSpireDoublePolynomials(specializedireDenseDoublePolys))
 
 }
 
@@ -238,7 +238,7 @@ class PolynomialBenchmarks extends MyBenchmark {
 // PRIVATE SPIRE IMPLEMENTATION
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //Term
-case class Term[@spec(Float, Double) C](coeff: C, exp: Int) { lhs =>
+case class Term[@specialized(Float, Double) C](coeff: C, exp: Int) { lhs =>
 
   def unary_-(implicit r: Rng[C]): Term[C] = Term( implicitly[Rng[C]].negate(coeff), exp)
 
@@ -305,11 +305,11 @@ object Term {
     def compare(x: Term[C], y: Term[C]): Int = x.exp compare y.exp
   }
 
-  def fromTuple[@spec(Float, Double) C](tpl: (Int, C)): Term[C] =
+  def fromTuple[@specialized(Float, Double) C](tpl: (Int, C)): Term[C] =
     Term(tpl._2, tpl._1)
-  def zero[@spec(Float, Double) C](implicit r: Semiring[C]): Term[C] =
+  def zero[@specialized(Float, Double) C](implicit r: Semiring[C]): Term[C] =
     Term(r.zero, 0)
-  def one[@spec(Float, Double) C](implicit r: Rig[C]): Term[C] =
+  def one[@specialized(Float, Double) C](implicit r: Rig[C]): Term[C] =
     Term(r.one, 0)
 
    val IsZero = "0".r
@@ -318,7 +318,7 @@ object Term {
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //PolySparse
 
-case class PolySparse[@spec(Double) C]  (val exp: Array[Int], val coeff: Array[C])
+case class PolySparse[@specialized(Double) C]  (val exp: Array[Int], val coeff: Array[C])
     (implicit val ct: ClassTag[C]) extends Polynomial[C] { lhs =>
 
   def toDense(implicit ring: Semiring[C], eq: Eq[C]): PolyDense[C] =
@@ -490,14 +490,14 @@ case class PolySparse[@spec(Double) C]  (val exp: Array[Int], val coeff: Array[C
 
 
 object PolySparse {
- final def dense2sparse[@spec(Double) C: Semiring: Eq: ClassTag](poly: PolyDense[C]): PolySparse[C] = {
+ final def dense2specializedarse[@specialized(Double) C: Semiring: Eq: ClassTag](poly: PolyDense[C]): PolySparse[C] = {
     val cs = poly.coeffs
     val es = new Array[Int](cs.length)
     cFor.cfor(0)(_ < es.length, _ + 1) { i => es(i) = i }
     PolySparse.safe(es, cs)
   }
 
-   final def safe[@spec(Double) C: Semiring: Eq: ClassTag]
+   final def safe[@specialized(Double) C: Semiring: Eq: ClassTag]
       (exp: Array[Int], coeff: Array[C]): PolySparse[C] = {
     var len = 0
     cFor.cfor(0)(_ < coeff.length, _ + 1) { i =>
@@ -530,7 +530,7 @@ object PolySparse {
     	  	  else if (x > y) 1
     	  	  else 0
 	}
-  final def apply[@spec(Double) C: Semiring: Eq: ClassTag](data: Map[Int,C]): PolySparse[C] = {
+  final def apply[@specialized(Double) C: Semiring: Eq: ClassTag](data: Map[Int,C]): PolySparse[C] = {
     val data0 = data.toArray
     //TODO: qsort 
     
@@ -548,13 +548,13 @@ object PolySparse {
     safe(es, cs)
   }
 
-  final def apply[@spec(Double) C: Semiring: Eq: ClassTag](poly: Polynomial[C]): PolySparse[C] = {
+  final def apply[@specialized(Double) C: Semiring: Eq: ClassTag](poly: Polynomial[C]): PolySparse[C] = {
     poly match {
       case (poly: PolySparse[_]) =>
         poly
 
       case (_: PolyDense[_]) =>
-        dense2sparse(poly.asInstanceOf[PolyDense[C]])
+        dense2specializedarse(poly.asInstanceOf[PolyDense[C]])
 
       case _ =>
         var len = 0
@@ -571,10 +571,10 @@ object PolySparse {
     }
   }
 
-  final def zero[@spec(Double) C: Semiring: Eq: ClassTag]: PolySparse[C] =
+  final def zero[@specialized(Double) C: Semiring: Eq: ClassTag]: PolySparse[C] =
     new PolySparse(new Array[Int](0), new Array[C](0))
 
-   final def multiplyTerm[@spec(Double) C: Semiring: Eq: ClassTag](poly: PolySparse[C], c: C, e: Int): PolySparse[C] = {
+   final def multiplyTerm[@specialized(Double) C: Semiring: Eq: ClassTag](poly: PolySparse[C], c: C, e: Int): PolySparse[C] = {
     val exp = poly.exp
     val coeff = poly.coeff
     val cs = new Array[C](coeff.length)
@@ -587,7 +587,7 @@ object PolySparse {
     new PolySparse(es, cs)
   }
 
-   final def multiplySparse[@spec(Double) C: Semiring: Eq: ClassTag]
+   final def multiplySparse[@specialized(Double) C: Semiring: Eq: ClassTag]
       (lhs: PolySparse[C], rhs: PolySparse[C]): PolySparse[C] = {
     val lexp = lhs.exp
     val lcoeff = lhs.coeff
@@ -598,7 +598,7 @@ object PolySparse {
     sum
   }
 
-   final def countSumTerms[@spec(Double) C]
+   final def countSumTerms[@specialized(Double) C]
       (lhs: PolySparse[C], rhs: PolySparse[C], lOffset: Int = 0, rOffset: Int = 0): Int = {
     val PolySparse(lexp, lcoeff) = lhs
     val PolySparse(rexp, rcoeff) = rhs
@@ -711,7 +711,7 @@ object PolySparse {
     loop(0, 0, 0)
   }
 
-   final def quotmodSparse[@spec(Double) C: Field: Eq: ClassTag]
+   final def quotmodSparse[@specialized(Double) C: Field: Eq: ClassTag]
       (lhs: PolySparse[C], rhs: PolySparse[C]): (PolySparse[C], PolySparse[C]) = {
     val rdegree = rhs.degree
     val rmaxCoeff = rhs.maxOrderTermCoeff
@@ -742,13 +742,13 @@ object PolySparse {
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //PolyDense
 
-class PolyDense[@spec(Double) C]  (val coeffs: Array[C])
+class PolyDense[@specialized(Double) C]  (val coeffs: Array[C])
     (implicit val ct: ClassTag[C]) extends Polynomial[C]  { lhs =>
 
   def degree: Int = if (isZero) 0 else coeffs.length - 1
 
   def toSparse(implicit ring: Semiring[C], eq: Eq[C]): PolySparse[C] =
-    Polynomial.sparse(data)
+    Polynomial.specializedarse(data)
 
   def toDense(implicit ring: Semiring[C], eq: Eq[C]): PolyDense[C] = lhs
 
@@ -946,7 +946,7 @@ object PolyDense {
 
 object Polynomial extends PolynomialInstances {
 
-  def dense[@spec(Double) C: Semiring: Eq: ClassTag](coeffs: Array[C]): PolyDense[C] = {
+  def dense[@specialized(Double) C: Semiring: Eq: ClassTag](coeffs: Array[C]): PolyDense[C] = {
     var i = coeffs.length
     while (i > 0 && (coeffs(i - 1) == Semiring[C].zero)) i -= 1
     if (i == coeffs.length) {
@@ -958,37 +958,37 @@ object Polynomial extends PolynomialInstances {
     }
   }
 
-  def sparse[@spec(Double) C: Semiring: Eq: ClassTag](data: Map[Int, C]): PolySparse[C] =
+  def specializedarse[@specialized(Double) C: Semiring: Eq: ClassTag](data: Map[Int, C]): PolySparse[C] =
     PolySparse(data)
 
-  def apply[@spec(Double) C: Semiring: Eq: ClassTag](data: Map[Int, C]): PolySparse[C] =
-    sparse(data)
+  def apply[@specialized(Double) C: Semiring: Eq: ClassTag](data: Map[Int, C]): PolySparse[C] =
+    specializedarse(data)
 
-  def apply[@spec(Double) C: Semiring: Eq: ClassTag](terms: Iterable[Term[C]]): PolySparse[C] =
-    sparse(terms.map(_.toTuple)(collection.breakOut))
+  def apply[@specialized(Double) C: Semiring: Eq: ClassTag](terms: Iterable[Term[C]]): PolySparse[C] =
+    specializedarse(terms.map(_.toTuple)(collection.breakOut))
 
-  def apply[@spec(Double) C: Semiring: Eq: ClassTag](c: C, e: Int): PolySparse[C] =
+  def apply[@specialized(Double) C: Semiring: Eq: ClassTag](c: C, e: Int): PolySparse[C] =
     PolySparse.safe(Array(e), Array(c))
 
   import scala.util.{Try, Success, Failure}
 
   def apply(s: String): Polynomial[Rational] = parse(s)
 
-  def zero[@spec(Double) C: Eq: Semiring: ClassTag]: Polynomial[C] =
+  def zero[@specialized(Double) C: Eq: Semiring: ClassTag]: Polynomial[C] =
     PolySparse.zero[C]
-  def constant[@spec(Double) C: Eq: Semiring: ClassTag](c: C): Polynomial[C] =
+  def constant[@specialized(Double) C: Eq: Semiring: ClassTag](c: C): Polynomial[C] =
     if (c == Semiring[C].zero) zero[C] else Polynomial(Map(0 -> c))
-  def linear[@spec(Double) C: Eq: Semiring: ClassTag](c: C): Polynomial[C] =
+  def linear[@specialized(Double) C: Eq: Semiring: ClassTag](c: C): Polynomial[C] =
     if (c == Semiring[C].zero) zero[C] else Polynomial(Map(1 -> c))
-  def quadratic[@spec(Double) C: Eq: Semiring: ClassTag](c: C): Polynomial[C] =
+  def quadratic[@specialized(Double) C: Eq: Semiring: ClassTag](c: C): Polynomial[C] =
     if (c == Semiring[C].zero) zero[C] else Polynomial(Map(2 -> c))
-  def cubic[@spec(Double) C: Eq: Semiring: ClassTag](c: C): Polynomial[C] =
+  def cubic[@specialized(Double) C: Eq: Semiring: ClassTag](c: C): Polynomial[C] =
     if (c == Semiring[C].zero) zero[C] else Polynomial(Map(3 -> c))
-  def one[@spec(Double) C: Eq: Rig: ClassTag]: Polynomial[C] =
+  def one[@specialized(Double) C: Eq: Rig: ClassTag]: Polynomial[C] =
     constant(Rig[C].one)
-  def x[@spec(Double) C: Eq: Rig: ClassTag]: Polynomial[C] =
+  def x[@specialized(Double) C: Eq: Rig: ClassTag]: Polynomial[C] =
     linear(Rig[C].one)
-  def twox[@spec(Double) C: Eq: Rig: ClassTag]: Polynomial[C] =
+  def twox[@specialized(Double) C: Eq: Rig: ClassTag]: Polynomial[C] =
     linear( implicitly[Semiring[C]].plus(Rig[C].one,Rig[C].one))
 
    val termRe = "([0-9]+\\.[0-9]+|[0-9]+/[0-9]+|[0-9]+)?(?:([a-z])(?:\\^([0-9]+))?)?".r
@@ -1025,7 +1025,7 @@ object Polynomial extends PolynomialInstances {
         parse(s2.substring(m2.end), if (t.c == 0) ts else t :: ts)
       }
 
-    // do some pre-processing to remove whitespace/outer parens
+    // do some pre-processing to remove whitespecializedace/outer parens
     val t = s.trim
     val u = if (t.startsWith("(") && t.endsWith(")")) t.substring(1, t.length - 1) else t
 
@@ -1054,7 +1054,7 @@ object Polynomial extends PolynomialInstances {
     Polynomial(ts.map(t => (t.e, t.c)).toMap)
   }
 
-  final def split[@spec(Double) C: ClassTag](poly: Polynomial[C]): (Array[Int], Array[C]) = {
+  final def specializedlit[@specialized(Double) C: ClassTag](poly: Polynomial[C]): (Array[Int], Array[C]) = {
     val es = ArrayBuilder.make[Int]()
     val cs = ArrayBuilder.make[C]()
     poly foreach { (e, c) =>
@@ -1082,13 +1082,13 @@ object Polynomial extends PolynomialInstances {
   }*/
 }
 
-trait Polynomial[@spec(Double) C] { lhs =>
+trait Polynomial[@specialized(Double) C] { lhs =>
   implicit def ct: ClassTag[C]
 
   /** Returns a polynmial that has a dense representation. */
   def toDense(implicit ring: Semiring[C], eq: Eq[C]): PolyDense[C]
 
-  /** Returns a polynomial that has a sparse representation. */
+  /** Returns a polynomial that has a specializedarse representation. */
   def toSparse(implicit ring: Semiring[C], eq: Eq[C]): PolySparse[C]
 
   def foreach[U](f: (Int, C) => U): Unit
@@ -1201,8 +1201,8 @@ trait Polynomial[@spec(Double) C] { lhs =>
 
   override def equals(that: Any): Boolean = that match {
     case rhs: Polynomial[_] if lhs.degree == rhs.degree =>
-      val (les, lcs) = Polynomial.split(lhs)
-      val (res, rcs) = Polynomial.split[Any](rhs.asInstanceOf[Polynomial[Any]])
+      val (les, lcs) = Polynomial.specializedlit(lhs)
+      val (res, rcs) = Polynomial.specializedlit[Any](rhs.asInstanceOf[Polynomial[Any]])
 
       @tailrec
       def loop(i: Int, j: Int): Boolean = {
@@ -1228,7 +1228,7 @@ trait Polynomial[@spec(Double) C] { lhs =>
       n == 0
 
     case n if lhs.degree == 0 =>
-      val (_, lcs) = Polynomial.split(lhs)
+      val (_, lcs) = Polynomial.specializedlit(lhs)
       lcs(0) == n
 
     case _ =>
@@ -1249,7 +1249,7 @@ trait Polynomial[@spec(Double) C] { lhs =>
     }
 }
 
-trait PolynomialSemiring[@spec(Double) C]
+trait PolynomialSemiring[@specialized(Double) C]
 extends Semiring[Polynomial[C]] {
   implicit def scalar: Semiring[C]
   implicit def eq: Eq[C]
@@ -1260,14 +1260,14 @@ extends Semiring[Polynomial[C]] {
   def times(x: Polynomial[C], y: Polynomial[C]): Polynomial[C] = x * y
 }
 
-trait PolynomialRig[@spec(Double) C] extends PolynomialSemiring[C]
+trait PolynomialRig[@specialized(Double) C] extends PolynomialSemiring[C]
 with Rig[Polynomial[C]] {
   implicit override val scalar: Rig[C]
 
   def one: Polynomial[C] = Polynomial.one[C]
 }
 
-trait PolynomialRng[@spec(Double) C] extends PolynomialSemiring[C]
+trait PolynomialRng[@specialized(Double) C] extends PolynomialSemiring[C]
 with RingAlgebra[Polynomial[C], C] {
   implicit override val scalar: Rng[C]
 
@@ -1275,14 +1275,14 @@ with RingAlgebra[Polynomial[C], C] {
   def negate(x: Polynomial[C]): Polynomial[C] = -x
 }
 
-trait PolynomialRing[@spec(Double) C] extends PolynomialRng[C]
+trait PolynomialRing[@specialized(Double) C] extends PolynomialRng[C]
 with Ring[Polynomial[C]] {
   implicit override val scalar: Ring[C]
 
   def one: Polynomial[C] = Polynomial.one[C]
 }
 
-trait PolynomialEuclideanRing[@spec(Double) C] extends PolynomialRing[C]
+trait PolynomialEuclideanRing[@specialized(Double) C] extends PolynomialRing[C]
 with EuclideanRing[Polynomial[C]] with VectorSpace[Polynomial[C], C] {
   implicit override val scalar: Field[C]
 
@@ -1297,7 +1297,7 @@ with EuclideanRing[Polynomial[C]] with VectorSpace[Polynomial[C], C] {
   }
 }
 
-trait PolynomialEq[@spec(Double) C] extends Eq[Polynomial[C]] {
+trait PolynomialEq[@specialized(Double) C] extends Eq[Polynomial[C]] {
   implicit def scalar: Semiring[C]
   implicit def eq: Eq[C]
   implicit def ct: ClassTag[C]
@@ -1307,14 +1307,14 @@ trait PolynomialEq[@spec(Double) C] extends Eq[Polynomial[C]] {
 }
 
 trait PolynomialInstances0 {
-  implicit def semiring[@spec(Double) C: ClassTag: Semiring: Eq] =
+  implicit def semiring[@specialized(Double) C: ClassTag: Semiring: Eq] =
     new PolynomialSemiring[C] {
       val scalar = Semiring[C]
       val eq = Eq[C]
       val ct = implicitly[ClassTag[C]]
     }
 
-  implicit def eq[@spec(Double) C: ClassTag: Semiring: Eq] =
+  implicit def eq[@specialized(Double) C: ClassTag: Semiring: Eq] =
     new PolynomialEq[C] {
       val scalar = Semiring[C]
       val eq = Eq[C]
@@ -1323,14 +1323,14 @@ trait PolynomialInstances0 {
 }
 
 trait PolynomialInstances1 extends PolynomialInstances0 {
-  implicit def rig[@spec(Double) C: ClassTag: Rig: Eq] =
+  implicit def rig[@specialized(Double) C: ClassTag: Rig: Eq] =
     new PolynomialRig[C] {
       val scalar = Rig[C]
       val eq = Eq[C]
       val ct = implicitly[ClassTag[C]]
     }
 
-  implicit def rng[@spec(Double) C: ClassTag: Rng: Eq] =
+  implicit def rng[@specialized(Double) C: ClassTag: Rng: Eq] =
     new PolynomialRng[C] {
       val scalar = Rng[C]
       val eq = Eq[C]
@@ -1339,7 +1339,7 @@ trait PolynomialInstances1 extends PolynomialInstances0 {
 }
 
 trait PolynomialInstances2 extends PolynomialInstances1 {
-  implicit def ring[@spec(Double) C: ClassTag: Ring: Eq] =
+  implicit def ring[@specialized(Double) C: ClassTag: Ring: Eq] =
     new PolynomialRing[C] {
       val scalar = Ring[C]
       val eq = Eq[C]
@@ -1348,7 +1348,7 @@ trait PolynomialInstances2 extends PolynomialInstances1 {
 }
 
 trait PolynomialInstances3 extends PolynomialInstances2 {
-  implicit def euclideanRing[@spec(Double) C: ClassTag: Field: Eq] =
+  implicit def euclideanRing[@specialized(Double) C: ClassTag: Field: Eq] =
     new PolynomialEuclideanRing[C] {
       val scalar = Field[C]
       val eq = Eq[C]
@@ -1695,7 +1695,7 @@ object Rational extends RationalInstances {
 }
 
 
-trait Integral[@spec(Int,Long) A] extends EuclideanRing[A] with ConvertableFrom[A] with ConvertableTo[A] with IsReal[A]
+trait Integral[@specialized(Int,Long) A] extends EuclideanRing[A] with ConvertableFrom[A] with ConvertableTo[A] with IsReal[A]
 
  abstract class Rationals[@specialized(Long) A](implicit integral: Integral[A]) {
    import LongRationals._
@@ -2793,7 +2793,7 @@ trait SafeLongIsEuclideanRing extends EuclideanRing[SafeLong] with SafeLongIsRin
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Ring Algebra
  
- trait RingAlgebra[V, @spec R] extends Module[V, R] with Rng[V]
+ trait RingAlgebra[V, @specialized R] extends Module[V, R] with Rng[V]
 
 object RingAlgebra {
   implicit def ZAlgebra[A](implicit vector0: Ring[A], scalar0: Ring[Int]) = new ZAlgebra[A] {
@@ -2823,7 +2823,7 @@ trait ZAlgebra[V] extends RingAlgebra[V, Int] with Ring[V] {
 }
 
 
-trait FieldAlgebra[V, @spec(Float, Double) F] extends RingAlgebra[V, F] with VectorSpace[V, F]
+trait FieldAlgebra[V, @specialized(Float, Double) F] extends RingAlgebra[V, F] with VectorSpace[V, F]
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -3467,8 +3467,8 @@ object cFor{
 /***********************************************************************************************************************/
 // Bug implementation
 
-final class ArrayOps[@sp A](arr: Array[A]) {
-def qsortBy[@sp B](f: A => B)(implicit ev: Order[B], ct: ClassTag[A]): Unit = {
+final class ArrayOps[@specialized A](arr: Array[A]) {
+def qsortBy[@specialized B](f: A => B)(implicit ev: Order[B], ct: ClassTag[A]): Unit = {
     implicit val ord: Order[A] = ev.on(f)
     Sorting.sort(arr)
   }
