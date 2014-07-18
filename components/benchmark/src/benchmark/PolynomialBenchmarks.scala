@@ -12,6 +12,7 @@ import scala.collection.mutable.ArrayBuilder
 import scala.annotation.tailrec
 import scala.reflect.ClassTag
 import scala.{specialized => spec}
+import scala.{specialized => sp}
 import java.lang.Long.{ numberOfTrailingZeros, numberOfLeadingZeros }
 import scala.math.{ScalaNumber, ScalaNumericConversions}
 import java.lang.Math
@@ -523,11 +524,20 @@ object PolySparse {
       loop(0, 0)
     }
   }
-
+ implicit object myOrderInt extends Order[Int]{
+			  def compare(x:Int,y:Int):Int = 
+    	  	  if(x<y) -1 
+    	  	  else if (x > y) 1
+    	  	  else 0
+	}
   final def apply[@spec(Double) C: Semiring: Eq: ClassTag](data: Map[Int,C]): PolySparse[C] = {
     val data0 = data.toArray
-    //TODO: It was qsortby , modification
-    data0.sortBy(_._1)
+    //TODO: qsort 
+    
+    val sortObject = new ArrayOps(data0)
+    sortObject.qsortBy(_._1)
+
+    
     val es = new Array[Int](data0.length)
     val cs = new Array[C](data0.length)
     cFor.cfor(0)(_ < data0.length, _ + 1) { i =>
@@ -1610,7 +1620,7 @@ object Rational extends RationalInstances {
     case s => try {
     // Rational(BigDecimal(s))
     /// TODO COMPILATION ERROR: Strange error of compilation, ??? added instead of right implementation
-       Rational(1111)
+      Rational(1111)
     } catch {
       case nfe: NumberFormatException => throw new NumberFormatException("For input string: " + s)
     }
@@ -3453,3 +3463,14 @@ object cFor{
     }
   }
 }
+
+/***********************************************************************************************************************/
+// Bug implementation
+
+final class ArrayOps[@sp A](arr: Array[A]) {
+def qsortBy[@sp B](f: A => B)(implicit ev: Order[B], ct: ClassTag[A]): Unit = {
+    implicit val ord: Order[A] = ev.on(f)
+    Sorting.sort(arr)
+  }
+}
+

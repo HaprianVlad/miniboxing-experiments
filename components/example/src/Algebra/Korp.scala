@@ -5,9 +5,13 @@ import scala.{ specialized => spec }
 import spire.math._
 import spire._
 import spire.math.IntNumber
+import spire.algebra._
+import spire.std._
+import spire.implicits._
 
 object ax{
 val x = spire.math.pow(1,1)
+
 
 }
 // Represents an abelian group whose elements can have an order
