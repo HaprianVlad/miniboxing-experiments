@@ -910,7 +910,7 @@ trait ConvertableFromFloat extends ConvertableFrom[Float] {
   def toFloat(a: Float): Float = a
   def toDouble(a: Float): Double = a.toDouble
   def toBigInt(a: Float): BigInt = BigInt(a.toLong)
-  def toBigDecimal(a: Float): BigDecimal = BigDecimal(a)
+  def toBigDecimal(a: Float): BigDecimal = BigDecimal(a.toDouble)
   def toRational(a: Float): Rational = Rational(a)
   def toNumber(a: Float): Number = Number(a)
 
