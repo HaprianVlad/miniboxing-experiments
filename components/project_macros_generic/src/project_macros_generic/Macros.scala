@@ -1,5 +1,4 @@
-package project_macros
-
+package project_macros_generic
 
 import scala.language.experimental.macros
 import scala.reflect.macros.blackbox.Context

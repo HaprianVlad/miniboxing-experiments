@@ -76,7 +76,7 @@ object MiniboxingBuild extends Build {
     scalacOptions ++= (
      // "-P:minibox:log" ::    // enable the miniboxing plugin output
       //                       // (which explains what the plugin is doing)
-     "-P:minibox:hijack" :: // enable hijacking the @specialized annotations
+     // "-P:minibox:hijack" :: // enable hijacking the @specialized annotations
       //                       // transforming them into @miniboxed annotations
      "-optimize" ::         // necessary to get the best performance when
                              // using the miniboxing plugin
@@ -95,6 +95,9 @@ object MiniboxingBuild extends Build {
   lazy val benchmark_miniboxed = Project(id = "benchmark_miniboxed", base = file("components/benchmark_miniboxed"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings )
   lazy val benchmark_generic = Project(id = "benchmark_generic", base = file("components/benchmark_generic"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings )
   lazy val project_macros = Project(id = "project_macros", base = file("components/project_macros"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings )
+ lazy val project_macros_generic = Project(id = "project_macros_generic", base = file("components/project_macros_generic"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings )
+ lazy val project_macros_miniboxed = Project(id = "project_macros_miniboxed", base = file("components/project_macros_miniboxed"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings )
+
 
 }
 
