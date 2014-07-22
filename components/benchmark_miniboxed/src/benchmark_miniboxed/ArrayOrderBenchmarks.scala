@@ -90,8 +90,8 @@ class ArrayOrderBenchmarks extends MyBenchmark {
 
   // def timeCompareGeneric(reps: Int) = run(reps) { a compare b }
   // def timeCompareDirect(reps: Int) = run(reps) { directCompare(a, b) }
-
-  def timeAddGeneric(reps: Int) = run(reps) {implicitly[Monoid[Array[Int]]].op(a,b)}
+ implicit object array extends ArrayInstances
+  def timeAddGeneric(reps: Int) = run(reps) {implicitly[ArrayModule[Int]].plus(a,b) }
   def timeAddIndirect(reps: Int) = run(reps) { indirectAdd(a, b) }
   def timeAddDirect(reps: Int) = run(reps) { directAdd(a, b) }
 }

@@ -30,7 +30,7 @@ object MiniboxingBuild extends Build {
     scalacOptions ++= Seq("-feature", "-deprecation", "-unchecked", "-Xlint"),
     scalacOptions ++= Seq("-optimize", "-Yinline-warnings"),
 
-    scalaVersion := "2.10.3",
+    scalaVersion := "2.11.1",
 
     libraryDependencies ++=
       Seq(//"org.spire-math" %% "spire" % "0.7.4", 
