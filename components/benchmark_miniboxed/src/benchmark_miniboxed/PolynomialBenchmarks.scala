@@ -1424,14 +1424,15 @@ sealed abstract class Rational extends ScalaNumber with ScalaNumericConversions 
     } else if (!(exp.numerator.isValidInt) || !(exp.denominator.isValidInt)) {
       throw new ArithmeticException("Exponent is too large!")
     } else {
-   
-      (this pow exp.numerator.toInt).nroot(exp.denominator.toInt)(ctxt)
+      //TODO:MODIFication
+    	Rational(1)
+      //(this pow exp.numerator.toInt).nroot(exp.denominator.toInt)(ctxt)
     }
   }
 
 
   
-  def nroot(k: Int)(implicit ctxt: ApproximationContext[Rational]): Rational = if (k == 0) {
+ /* def nroot(k: Int)(implicit ctxt: ApproximationContext[Rational]): Rational = if (k == 0) {
     Rational.one
   } else if (k < 0) {
     this.inverse.nroot(-k)(ctxt)
@@ -1493,7 +1494,7 @@ sealed abstract class Rational extends ScalaNumber with ScalaNumericConversions 
       findNthRoot(high, 0)
     }
   }
-
+*/
   def sign: Sign = Sign(signum)
 
   def compareToOne: Int
@@ -1641,7 +1642,7 @@ object Rational extends RationalInstances {
    *
    * 
    */
-  def nroot(x: BigInt, n: Int): (BigInt, BigInt) = {
+ /* def nroot(x: BigInt, n: Int): (BigInt, BigInt) = {
     def findnroot(prev: BigInt, add: Int): (BigInt, BigInt) = {
       val min = prev setBit add
       val max = min + 1
@@ -1664,12 +1665,12 @@ object Rational extends RationalInstances {
 
     findnroot(BigInt(0), (x.bitLength + n - 1) / n) // ceil(x.bitLength / n)
   }
-
+*/
 
   /**
    * Returns an interval that bounds the nth-root of the integer x.
    */
-  def nroot(x: Long, n: Int): (Long, Long) = {
+  /*def nroot(x: Long, n: Int): (Long, Long) = {
     def findnroot(prev: Long, add: Long): (Long, Long) = {
       val min = prev | add
       val max = min + 1
@@ -1691,7 +1692,7 @@ object Rational extends RationalInstances {
 
     
     findnroot(0, 1L << ((65 - n) / n))
-  }
+  }*/
 }
 
 
@@ -2334,7 +2335,7 @@ trait RationalInstances {
 
 trait RationalIsNRoot extends NRoot[Rational] with Serializable {
   implicit def context:ApproximationContext[Rational]
-   def nroot(a: Rational, k: Int): Rational = a.nroot(k)
+   //def nroot(a: Rational, k: Int): Rational = a.nroot(k)
   def fpow(a: Rational, b: Rational): Rational = a.pow(b)
 }
 
@@ -2723,7 +2724,8 @@ object SafeLong extends SafeLongInstances {
 
 trait SafeLongInstances {
   @SerialVersionUID(0L)
-  implicit object SafeLongAlgebra extends SafeLongIsEuclideanRing with SafeLongIsNRoot with Serializable
+  //TODO: with SafeLongIsNRoot removed
+  implicit object SafeLongAlgebra extends SafeLongIsEuclideanRing  with Serializable
 
   @SerialVersionUID(0L)
   implicit object SafeLongIsReal extends SafeLongIsReal with Serializable
@@ -2750,27 +2752,27 @@ trait SafeLongIsEuclideanRing extends EuclideanRing[SafeLong] with SafeLongIsRin
 
   
   //TODO:SEE this two implementations
- trait SafeLongIsNRoot extends NRoot[SafeLong] {
+ /*trait SafeLongIsNRoot extends NRoot[SafeLong] {
   implicit object nRootLong extends NRoot[Long]{
     def fpow(x:Long,y:Long) = math.pow(x,y)
     
-      def nroot(x:Long,n:Int) = if (n==0) 1 
+     /* def nroot(x:Long,n:Int) = if (n==0) 1 
       else if (n == 1) x 
       else nroot(sqrt(x),n-2)
-    
+    */
   }
   implicit object nRootBiGInt extends NRoot[BigInt]{
      def fpow(x:BigInt,y:BigInt) = x.pow(y.toInt)
-     def nroot(x:BigInt,n:Int) =  sqrt(x)
+     //def nroot(x:BigInt,n:Int) =  sqrt(x)
    }
-  def nroot(a: SafeLong, k: Int): SafeLong = a.fold(
+ /* def nroot(a: SafeLong, k: Int): SafeLong = a.fold(
     n => SafeLong(NRoot[Long].nroot(n, k)),
     n => SafeLong(NRoot[BigInt].nroot(n, k))
-  )
+  )*/
 
   def fpow(a:SafeLong, b:SafeLong) =
     SafeLong(NRoot[BigInt].fpow(a.toBigInt, b.toBigInt))
-}
+}*/
 
  trait SafeLongOrder extends Order[SafeLong] {
   override def eqv(x: SafeLong, y: SafeLong) = x == y
@@ -3062,13 +3064,13 @@ sealed trait Number extends ScalaNumericConversions with Serializable {
       Number(Math.sqrt(n.toDouble))
       //TODO:Modification 
       //Number(n.toBigDecimal.sqrt)
-  def nroot(k: Int): Number =
+  /*def nroot(k: Int): Number =
     if (withinDouble)
       Number(Math.pow(n.toDouble, 1.0 / k))
     else
        //TODO:Modification 
       //Number(n.toBigDecimal.nroot(k))
-      Number(n.toBigDecimal)
+      Number(n.toBigDecimal)*/
 
   def floor: Number = this
   def ceil: Number = this
@@ -3198,7 +3200,7 @@ sealed trait Number extends ScalaNumericConversions with Serializable {
   }
 
   def sqrt: Number = Number(Math.sqrt(n))
-  def nroot(k: Int): Number = Number(Math.pow(n, 1.0 / k))
+ /* def nroot(k: Int): Number = Number(Math.pow(n, 1.0 / k))*/
 
   def floor = Number(Math.floor(n))
   def ceil = Number(Math.ceil(n))
@@ -3282,7 +3284,7 @@ sealed trait Number extends ScalaNumericConversions with Serializable {
   def ceil = Number(n.ceil)
   def round = Number(n.round())*/
    def sqrt: Number = Number(Math.sqrt(n.toDouble))
-  def nroot(k: Int): Number = Number(Math.sqrt(n.toDouble))
+ // def nroot(k: Int): Number = Number(Math.sqrt(n.toDouble))
 
   def floor = Number(Math.floor(n.toDouble))
   def ceil = Number(Math.ceil(n.toDouble))
@@ -3394,7 +3396,7 @@ trait NumberIsEuclideanRing extends EuclideanRing[Number] with NumberIsRing {
 }
 
 trait NumberIsNRoot extends NRoot[Number] {
-  def nroot(a: Number, k: Int): Number = a.pow(Number(k))
+  //def nroot(a: Number, k: Int): Number = a.pow(Number(k))
   override def sqrt(a: Number): Number = a.pow(Number(0.5))
   def fpow(a: Number, b: Number) = a.pow(b)
 }
