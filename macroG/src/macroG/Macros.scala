@@ -1,11 +1,9 @@
-package project_macros_miniboxed
+package macroG
 
-
-import scala.language.experimental.macros
 import scala.reflect.macros.blackbox.Context
 import scala.language.implicitConversions
 import scala.language.higherKinds
-
+import scala.language.experimental.macros
 
 /**************************************************************************************/
 // Macros Implementation for array + operation
@@ -46,7 +44,7 @@ trait Ops{
   def findMethodName(c:Context) = {
     import c.universe._
     val s = c.macroApplication.symbol.name.toString
-     TermName(operatorNames.getOrElse(s, s))
+     c.universe.TermName(operatorNames.getOrElse(s, s))
     
   }
   
@@ -54,7 +52,7 @@ trait Ops{
     import c.universe._
     val (ev0, lhs) = unpack(c)
     val typeName = weakTypeOf[A].typeSymbol.name
-    val rhs1 = Apply(Select(ev1.tree, TermName("from" + typeName)), List(rhs.tree))
+    val rhs1 = Apply(Select(ev1.tree, c.universe.TermName("from" + typeName)), List(rhs.tree))
     c.Expr[R](Apply(Select(ev0, findMethodName(c)), List(lhs, rhs1)))
   }
   

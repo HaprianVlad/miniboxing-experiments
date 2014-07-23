@@ -4,7 +4,9 @@ import Process._
 import sbt.Keys._
 
 object MiniboxingBuild extends Build {
-
+  
+ 
+  
   // http://stackoverflow.com/questions/6506377/how-to-get-list-of-dependency-jars-from-an-sbt-0-10-0-project
   val getJars = TaskKey[Unit]("get-jars")
   val getJarsTask = getJars <<= (target, fullClasspath in Runtime) map { (target, cp) =>
@@ -31,6 +33,8 @@ object MiniboxingBuild extends Build {
     scalacOptions ++= Seq("-optimize", "-Yinline-warnings"),
 
     scalaVersion := "2.11.1",
+
+    crossScalaVersions := Seq("2.10.2", "2.10.3", "2.10.4", "2.11.0", "2.11.1"),
 
     libraryDependencies ++=
       Seq(//"org.spire-math" %% "spire" % "0.7.4", 
@@ -89,14 +93,58 @@ object MiniboxingBuild extends Build {
     libraryDependencies += "org.spire-math" %% "spire" % "0.7.4"
   )
 
-  lazy val _mboxing = Project(id = "spire-mbox", base = file("."), settings = defaults) aggregate (example,benchmark)
-  lazy val example = Project(id = "spire-mbox-example", base = file("components/example"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings ++ spireSettings)
-  lazy val benchmark = Project(id = "benchmark", base = file("components/benchmark"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings )
-  lazy val benchmark_miniboxed = Project(id = "benchmark_miniboxed", base = file("components/benchmark_miniboxed"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings )
-  lazy val benchmark_generic = Project(id = "benchmark_generic", base = file("components/benchmark_generic"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings )
-  lazy val project_macros = Project(id = "project_macros", base = file("components/project_macros"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings )
- lazy val project_macros_generic = Project(id = "project_macros_generic", base = file("components/project_macros_generic"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings )
- lazy val project_macros_miniboxed = Project(id = "project_macros_miniboxed", base = file("components/project_macros_miniboxed"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings )
+
+  lazy val _mboxing = Project(id = "spire-mbox", base = file("."), settings = defaults) aggregate (example,benchmark,benchmark_miniboxed,benchmark_generic,macroSub,macroSub_Generic,macroSub_Miniboxed)
+ 
+ lazy val example = Project(id = "spire-mbox-example", base = file("components/example"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings ++ spireSettings)
+  
+  lazy val benchmark = Project(id = "benchmark", base = file("components/benchmark"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings ) dependsOn(macroSpire)
+  
+  lazy val benchmark_miniboxed = Project(id = "benchmark_miniboxed", base = file("components/benchmark_miniboxed"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings ) dependsOn(macroM)
+  lazy val benchmark_generic = Project(id = "benchmark_generic", base = file("components/benchmark_generic"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings ) dependsOn(macroG)
+ 
+ lazy val macroSub = Project(
+    "macro",
+    file("macro"),
+    settings = defaults ++ miniboxingSettings ++ Seq(
+      libraryDependencies <+= (scalaVersion)("org.scala-lang" % "scala-reflect" % _))
+  )
+
+
+lazy val macroSub_Generic = Project(
+    "macro_generic",
+    file("macro_generic"),
+    settings = defaults ++ miniboxingSettings ++ Seq(
+      libraryDependencies <+= (scalaVersion)("org.scala-lang" % "scala-reflect" % _))
+  )
+ 
+ lazy val macroSub_Miniboxed = Project(
+    "macro_miniboxed",
+    file("macro_miniboxed"),
+    settings = defaults ++ miniboxingSettings ++ Seq(
+      libraryDependencies <+= (scalaVersion)("org.scala-lang" % "scala-reflect" % _))
+  )
+
+ lazy val macroSpire = Project(
+    "macroSpire",
+    file("macroSpire"),
+    settings = defaults ++ miniboxingSettings ++ Seq(
+      libraryDependencies <+= (scalaVersion)("org.scala-lang" % "scala-reflect" % _))
+  )
+
+  lazy val macroM = Project(
+    "macroM",
+    file("macroM"),
+    settings = defaults ++ miniboxingSettings ++ Seq(
+      libraryDependencies <+= (scalaVersion)("org.scala-lang" % "scala-reflect" % _))
+  )
+
+ lazy val macroG = Project(
+    "macroG",
+    file("macroG"),
+    settings = defaults ++ miniboxingSettings ++ Seq(
+      libraryDependencies <+= (scalaVersion)("org.scala-lang" % "scala-reflect" % _))
+  )
 
 
 }

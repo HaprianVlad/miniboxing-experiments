@@ -9,7 +9,8 @@ import Random._
 import com.google.caliper.Runner
 import com.google.caliper.SimpleBenchmark
 import com.google.caliper.Param
- 
+
+import Macros._
 
 //ARRAY ORDER BENCHMARK SPIRE
 
@@ -33,6 +34,7 @@ class ArrayOrderBenchmarks extends MyBenchmark {
       	  else if (x > y) 1
       	  else 0
   }
+  
   
   implicit object myRingInt extends Ring[Int]{
     def zero = 0
@@ -97,8 +99,8 @@ class ArrayOrderBenchmarks extends MyBenchmark {
   // def timeCompareDirect(reps: Int) = run(reps) { directCompare(a, b) }
 
 
- //TODO: Vlad take a look if this implementation is correct. Thanks! 
-  def timeAddGeneric(reps: Int) = run(reps) {implicitly[Monoid[Array[Int]]].op(a,b)}
+
+  def timeAddGeneric(reps: Int) = run(reps) {a + b}
   def timeAddIndirect(reps: Int) = run(reps) {indirectAdd(a, b) }
   def timeAddDirect(reps: Int) = run(reps) { directAdd(a, b) }
 }
