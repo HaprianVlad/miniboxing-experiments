@@ -8,7 +8,7 @@ import com.google.caliper.Runner
 import com.google.caliper.SimpleBenchmark
 import com.google.caliper.Param
 
-import Macros._
+//import Macros._
 
 //ARRAY ORDER BENCHMARK MINIBOXED
 object ArrayOrderBenchmarks extends MyRunner(classOf[ArrayOrderBenchmarks])
@@ -93,7 +93,7 @@ class ArrayOrderBenchmarks extends MyBenchmark {
   // def timeCompareGeneric(reps: Int) = run(reps) { a compare b }
   // def timeCompareDirect(reps: Int) = run(reps) { directCompare(a, b) }
 
-  def timeAddGeneric(reps: Int) = run(reps) {a+b }
+  //def timeAddGeneric(reps: Int) = run(reps) {a+b }
   def timeAddIndirect(reps: Int) = run(reps) { indirectAdd(a, b) }
   def timeAddDirect(reps: Int) = run(reps) { directAdd(a, b) }
 }

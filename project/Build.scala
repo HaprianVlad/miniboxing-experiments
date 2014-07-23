@@ -94,37 +94,17 @@ object MiniboxingBuild extends Build {
   )
 
 
-  lazy val _mboxing = Project(id = "spire-mbox", base = file("."), settings = defaults) aggregate (example,benchmark,benchmark_miniboxed,benchmark_generic,macroSub,macroSub_Generic,macroSub_Miniboxed)
+  lazy val _mboxing = Project(id = "spire-mbox", base = file("."), settings = defaults
+) aggregate (example,benchmark,benchmark_miniboxed,benchmark_generic,macroSpire,macroG,macroM)
  
  lazy val example = Project(id = "spire-mbox-example", base = file("components/example"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings ++ spireSettings)
   
   lazy val benchmark = Project(id = "benchmark", base = file("components/benchmark"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings ) dependsOn(macroSpire)
   
   lazy val benchmark_miniboxed = Project(id = "benchmark_miniboxed", base = file("components/benchmark_miniboxed"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings ) dependsOn(macroM)
-  lazy val benchmark_generic = Project(id = "benchmark_generic", base = file("components/benchmark_generic"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings ) dependsOn(macroG)
  
- lazy val macroSub = Project(
-    "macro",
-    file("macro"),
-    settings = defaults ++ miniboxingSettings ++ Seq(
-      libraryDependencies <+= (scalaVersion)("org.scala-lang" % "scala-reflect" % _))
-  )
-
-
-lazy val macroSub_Generic = Project(
-    "macro_generic",
-    file("macro_generic"),
-    settings = defaults ++ miniboxingSettings ++ Seq(
-      libraryDependencies <+= (scalaVersion)("org.scala-lang" % "scala-reflect" % _))
-  )
+ lazy val benchmark_generic = Project(id = "benchmark_generic", base = file("components/benchmark_generic"), settings = defaults ++ scalaMeter ++ junitDeps ++ miniboxingSettings ) dependsOn(macroG)
  
- lazy val macroSub_Miniboxed = Project(
-    "macro_miniboxed",
-    file("macro_miniboxed"),
-    settings = defaults ++ miniboxingSettings ++ Seq(
-      libraryDependencies <+= (scalaVersion)("org.scala-lang" % "scala-reflect" % _))
-  )
-
  lazy val macroSpire = Project(
     "macroSpire",
     file("macroSpire"),
