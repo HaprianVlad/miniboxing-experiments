@@ -11,7 +11,6 @@ import com.google.caliper.SimpleBenchmark
 import com.google.caliper.Param
 import macroSpire._
 
-
 //ARRAY ORDER BENCHMARK SPIRE
 
 object ArrayOrderBenchmarks extends MyRunner(classOf[ArrayOrderBenchmarks])
@@ -99,9 +98,9 @@ class ArrayOrderBenchmarks extends MyBenchmark {
   // def timeCompareGeneric(reps: Int) = run(reps) { a compare b }
   // def timeCompareDirect(reps: Int) = run(reps) { directCompare(a, b) }
  
-  implicit object arraySemigroup extends macroSpire.AdditiveSemigroup[Array[Int]]
-  val adder = new AdditiveSemigroupOps(a)(arraySemigroup)
-  def timeAddGeneric(reps: Int) = run(reps) {adder.+(b)}
+  implicit object arraySemigroup extends macroSpire.AdditiveSemigroup[Array[Int]] 
+
+  def timeAddGeneric(reps: Int) = run(reps) {implicits.additiveSemigroupOps(a).+(b)} 
   def timeAddIndirect(reps: Int) = run(reps) {indirectAdd(a, b) }
   def timeAddDirect(reps: Int) = run(reps) { directAdd(a, b) }
 }

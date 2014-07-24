@@ -98,7 +98,9 @@ class ArrayOrderBenchmarks extends MyBenchmark {
   // def timeCompareDirect(reps: Int) = run(reps) { directCompare(a, b) }
 
   // implicitly[Monoid[Array[Int]]].op(a,b) - was before
- // def timeAddGeneric(reps: Int) = run(reps) {a+b}
+  
+  implicit object arraySemigroup extends macroG.AdditiveSemigroup[Array[Int]] 
+  def timeAddGeneric(reps: Int) = run(reps) {implicits.additiveSemigroupOps(a).+(b)}
   def timeAddIndirect(reps: Int) = run(reps) { indirectAdd(a, b) }
   def timeAddDirect(reps: Int) = run(reps) { directAdd(a, b) }
 }

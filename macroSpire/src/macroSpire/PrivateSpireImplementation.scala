@@ -1194,6 +1194,8 @@ trait AdditiveSemigroup[@spec(Byte, Short, Int, Long, Float, Double) A] {
   def plus(x: A, y: A): A
 }
 
+
+
 trait AdditiveCSemigroup[@spec(Byte, Short, Int, Long, Float, Double) A] extends AdditiveSemigroup[A] {
   override def additive: CSemigroup[A] = new CSemigroup[A] {
     def op(x: A, y: A): A = plus(x, y)
