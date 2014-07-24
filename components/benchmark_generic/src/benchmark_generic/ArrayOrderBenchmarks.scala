@@ -10,7 +10,8 @@ import com.google.caliper.Runner
 import com.google.caliper.SimpleBenchmark
 import com.google.caliper.Param
 
-//import Macros._
+import macroG._
+
 
 //ARRAY ORDER BENCHMARK GENERIC
 

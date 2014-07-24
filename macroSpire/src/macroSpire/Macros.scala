@@ -9,6 +9,7 @@ import scala.language.experimental.macros
 /**************************************************************************************/
 // Macros Implementation for array + operation
 
+
 final class AdditiveSemigroupOps[A](lhs:A)(implicit ev:AdditiveSemigroup[A]) {
   def +(rhs:A): A = macro Ops.binop[A, A]
   def +(rhs:Int)(implicit ev1: Ring[A]): A = macro Ops.binopWithLift[Int, Ring[A], A]

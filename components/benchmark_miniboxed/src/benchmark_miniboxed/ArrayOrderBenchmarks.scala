@@ -8,7 +8,8 @@ import com.google.caliper.Runner
 import com.google.caliper.SimpleBenchmark
 import com.google.caliper.Param
 
-//import Macros._
+import macroM._
+
 
 //ARRAY ORDER BENCHMARK MINIBOXED
 object ArrayOrderBenchmarks extends MyRunner(classOf[ArrayOrderBenchmarks])
