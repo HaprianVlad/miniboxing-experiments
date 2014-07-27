@@ -11,6 +11,9 @@ import com.google.caliper.SimpleBenchmark
 import com.google.caliper.Param
 import macroSpire._
 
+import reflect.macros.Context
+import language.experimental.macros
+
 //ARRAY ORDER BENCHMARK SPIRE
 
 object ArrayOrderBenchmarks extends MyRunner(classOf[ArrayOrderBenchmarks])
@@ -25,7 +28,6 @@ class ArrayOrderBenchmarks extends MyBenchmark {
   var d: Array[Int] = null
   var e: Array[Int] = null
   var f: Array[Int] = null
-
   
   //Implicit definitions
   implicit object myOrderInt extends Order[Int]{

@@ -1192,6 +1192,8 @@ trait AdditiveSemigroup[@spec(Byte, Short, Int, Long, Float, Double) A] {
   }
 
   def plus(x: A, y: A): A
+ // def plus(x:Array[A],y:Array[A]) :A 
+ 
 }
 
 
