@@ -1155,10 +1155,12 @@ object EuclideanRing {
 object Additive {
   def apply[A](s: Semigroup[A]): AdditiveSemigroup[A] = new AdditiveSemigroup[A] {
     def plus(x: A, y: A): A = s.op(x, y)
+  
   }
 
   def apply[A](s: CSemigroup[A]): AdditiveCSemigroup[A] = new AdditiveCSemigroup[A] {
     def plus(x: A, y: A): A = s.op(x, y)
+ 
   }
 
   def apply[A](m: Monoid[A]): AdditiveMonoid[A] = new AdditiveMonoid[A] {
@@ -1192,7 +1194,7 @@ trait AdditiveSemigroup[@spec(Byte, Short, Int, Long, Float, Double) A] {
   }
 
   def plus(x: A, y: A): A
- // def plus(x:Array[A],y:Array[A]) :A 
+
  
 }
 

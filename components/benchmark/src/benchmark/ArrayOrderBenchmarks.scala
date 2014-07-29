@@ -100,7 +100,13 @@ class ArrayOrderBenchmarks extends MyBenchmark {
   // def timeCompareGeneric(reps: Int) = run(reps) { a compare b }
   // def timeCompareDirect(reps: Int) = run(reps) { directCompare(a, b) }
  
-  implicit object arraySemigroup extends macroSpire.AdditiveSemigroup[Array[Int]] 
+  trait AdditiveArraySemigroup extends macroSpire.AdditiveSemigroup[Int]{
+    
+    def plus(x:Array[Int],y:Array[Int]): Array[Int]
+    
+  }
+  
+  implicit object arraySemigroup extends AdditiveArraySemigroup
 
   def timeAddGeneric(reps: Int) = run(reps) {implicits.additiveSemigroupOps(a).+(b)} 
   def timeAddIndirect(reps: Int) = run(reps) {indirectAdd(a, b) }
