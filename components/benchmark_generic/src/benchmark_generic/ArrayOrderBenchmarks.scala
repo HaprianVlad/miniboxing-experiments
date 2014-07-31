@@ -27,7 +27,7 @@ class ArrayOrderBenchmarks extends MyBenchmark {
   var d: Array[Int] = null
   var e: Array[Int] = null
   var f: Array[Int] = null
-  
+
   //Implicit definitions
   implicit object myOrderInt extends Order[Int]{
 	def compare(x:Int,y:Int):Int = 
@@ -111,6 +111,7 @@ class ArrayOrderBenchmarks extends MyBenchmark {
   def timeAddDirect(reps: Int) = run(reps) { directAdd(a, b) }
 }
 
+/*
 /********************************************************************************************************************/
 
 // All this for + operation in ArrayOrderBenchmark(timeAddGeneric)
@@ -276,3 +277,4 @@ trait AnyInstances extends  IntInstances
     with FloatInstances
     with DoubleInstances
     with ArrayInstances
+*/

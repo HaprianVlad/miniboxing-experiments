@@ -9,8 +9,6 @@ import spire.std._
 import spire.implicits._
 
 object ax{
-val x = spire.math.pow(1,1)
-
 var a :Array[Int] = new Array(1)
 var b :Array[Int] = new Array(1)
 
