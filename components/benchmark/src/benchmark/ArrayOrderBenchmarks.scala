@@ -107,13 +107,13 @@ class ArrayOrderBenchmarks extends MyBenchmark {
   }
   
   implicit object arraySemigroup extends AdditiveArraySemigroup
-
+  //val c = a + b
   def timeAddGeneric(reps: Int) = run(reps) {implicits.additiveSemigroupOps(a).+(b)} 
   def timeAddIndirect(reps: Int) = run(reps) {indirectAdd(a, b) }
   def timeAddDirect(reps: Int) = run(reps) { directAdd(a, b) }
 }
 
-/*
+
 /********************************************************************************************************************/
 
 // All this for + operation in ArrayOrderBenchmark(timeAddGeneric)
@@ -281,5 +281,5 @@ trait AnyInstances extends  IntInstances
     with ArrayInstances
    
 
-*/
+
 
