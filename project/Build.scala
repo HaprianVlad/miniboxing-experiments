@@ -32,6 +32,7 @@ object MiniboxingBuild extends Build {
     scalacOptions ++= Seq("-feature", "-deprecation", "-unchecked", "-Xlint"),
     scalacOptions ++= Seq("-optimize", "-Yinline-warnings","-Ymacro-debug-lite"),
     // ,"-Ymacro-debug-lite"  used for macro expansion
+   
     scalaVersion := "2.11.1",
 
     crossScalaVersions := Seq("2.10.2", "2.10.3", "2.10.4", "2.11.0", "2.11.1"),
