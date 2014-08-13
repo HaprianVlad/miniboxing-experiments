@@ -9,8 +9,7 @@ import scala.language.experimental.macros
 /**************************************************************************************/
 // Macros Implementation for array + operation
 
-//(implicit ev:AdditiveSemigroup[A])
-final class AdditiveSemigroupOps[A](lhs:A) {
+final class AdditiveSemigroupOps[A](lhs:A)(implicit ev:AdditiveSemigroup[A]) {
   def +(rhs:A): A = macro Ops.binop[A, A]
   def +(rhs:Int)(implicit ev1: Ring[A]): A = macro Ops.binopWithLift[Int, Ring[A], A]
   def +(rhs:Double)(implicit ev1:Field[A]): A = macro Ops.binopWithLift[Double, Field[A], A]
@@ -133,8 +132,8 @@ trait Ops{
                      with DoubleInstances
                       
 trait AdditiveSemigroupSyntax {
-   //A:AdditiveSemigroup
-  implicit def additiveSemigroupOps[A](a:A) = new AdditiveSemigroupOps(a)
+
+  implicit def additiveSemigroupOps[A:AdditiveSemigroup](a:A) = new AdditiveSemigroupOps(a)
   implicit def literalIntAdditiveSemigroupOps(lhs:Int) = new LiteralIntAdditiveSemigroupOps(lhs)
   implicit def literalLongAdditiveSemigroupOps(lhs:Long) = new LiteralLongAdditiveSemigroupOps(lhs)
   implicit def literalDoubleAdditiveSemigroupOps(lhs:Double) = new LiteralDoubleAdditiveSemigroupOps(lhs)

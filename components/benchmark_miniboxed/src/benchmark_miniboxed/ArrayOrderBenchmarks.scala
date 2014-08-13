@@ -95,7 +95,7 @@ class ArrayOrderBenchmarks extends MyBenchmark {
   // def timeCompareDirect(reps: Int) = run(reps) { directCompare(a, b) }
   trait AdditiveArraySemigroup extends macroM.AdditiveSemigroup[Array[Int]]{
     
-    def plus(x:Array[Int],y:Array[Int]): Array[Int] = ArraySupport.plus(x, y)
+    def plus(x:Array[Int],y:Array[Int]): Array[Int] = directAdd(x,y)
     
   }
   

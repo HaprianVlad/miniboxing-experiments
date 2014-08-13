@@ -101,7 +101,7 @@ class ArrayOrderBenchmarks extends MyBenchmark {
   
   trait AdditiveArraySemigroup extends macroG.AdditiveSemigroup[Array[Int]]{
     
-    def plus(x:Array[Int],y:Array[Int]): Array[Int] = ArraySupport.plus(x, y)
+    def plus(x:Array[Int],y:Array[Int]): Array[Int] = directAdd(x,y)
     
   }
   
