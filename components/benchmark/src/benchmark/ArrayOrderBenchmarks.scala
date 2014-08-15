@@ -107,8 +107,9 @@ class ArrayOrderBenchmarks extends MyBenchmark {
   }
   
   implicit object arraySemigroup extends AdditiveArraySemigroup
-
-
+ // Macro extension obtained with  scalac -Xprint:typer option
+ // def timeAddGeneric(reps: Int): Array[Int] = ArrayOrderBenchmarks.this.run[Array[Int]](reps)((ArrayOrderBenchmarks.this.arraySemigroup.plus(ArrayOrderBenchmarks.this.a, ArrayOrderBenchmarks.this.b): Array[Int]));
+ // The performance of this method depends on how we define the plus method in AdditiveArraySemigroup
   def timeAddGeneric(reps: Int) = run(reps) {implicits.additiveSemigroupOps(a).+(b)} 
   def timeAddIndirect(reps: Int) = run(reps) {indirectAdd(a, b) }
   def timeAddDirect(reps: Int) = run(reps) { directAdd(a, b) }
