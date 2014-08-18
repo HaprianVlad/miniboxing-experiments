@@ -2,9 +2,9 @@ package Integrals
 
 import spire.implicits._
 import spire.math.Complex
-import Algebra.Korp
+import Xalgebra.Korp
 import spire.algebra._
-import Algebra.Korp
+import Xalgebra.Korp
 
 class ComplexIntegral[T: Korp]{
 

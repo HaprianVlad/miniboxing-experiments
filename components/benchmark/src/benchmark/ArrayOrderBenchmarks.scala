@@ -99,8 +99,8 @@ class ArrayOrderBenchmarks extends MyBenchmark {
 
   // def timeCompareGeneric(reps: Int) = run(reps) { a compare b }
   // def timeCompareDirect(reps: Int) = run(reps) { directCompare(a, b) }
- 
-  trait AdditiveArraySemigroup extends macroSpire.AdditiveSemigroup[Array[Int]]{
+
+/*  trait AdditiveArraySemigroup extends macroSpire.AdditiveSemigroup[Array[Int]]{
     
     def plus(x:Array[Int],y:Array[Int]): Array[Int] = directAdd(x,y)
     
@@ -110,14 +110,21 @@ class ArrayOrderBenchmarks extends MyBenchmark {
  // Macro extension obtained with  scalac -Xprint:typer option
  // def timeAddGeneric(reps: Int): Array[Int] = ArrayOrderBenchmarks.this.run[Array[Int]](reps)((ArrayOrderBenchmarks.this.arraySemigroup.plus(ArrayOrderBenchmarks.this.a, ArrayOrderBenchmarks.this.b): Array[Int]));
  // The performance of this method depends on how we define the plus method in AdditiveArraySemigroup
-  def timeAddGeneric(reps: Int) = run(reps) {implicits.additiveSemigroupOps(a).+(b)} 
+
+  */
+
+  def timeAddGeneric(reps: Int) = run(reps) {implicits.ArrayModule[Int](macroSpire.NoImplicit.noImplicit0[macroSpire.VectorSpace[Array[Int],Int]], (ClassTag.Int: scala.reflect.ClassTag[Int]), implicits.IntAlgebra).plus(a, b)} 
   def timeAddIndirect(reps: Int) = run(reps) {indirectAdd(a, b) }
   def timeAddDirect(reps: Int) = run(reps) { directAdd(a, b) }
 }
 
 
-/********************************************************************************************************************/
 
+
+
+
+/********************************************************************************************************************/
+/*
 // All this for + operation in ArrayOrderBenchmark(timeAddGeneric)
 
 trait VectorSpace[V, @spec(Int, Long, Float, Double) F] extends Module[V, F] {
@@ -283,5 +290,5 @@ trait AnyInstances extends  IntInstances
     with ArrayInstances
    
 
-
+*/
 

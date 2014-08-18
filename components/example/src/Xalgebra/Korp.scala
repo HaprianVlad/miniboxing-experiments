@@ -1,4 +1,4 @@
-package Algebra
+package Xalgebra
 
 import spire.algebra._
 import scala.{ specialized => spec }

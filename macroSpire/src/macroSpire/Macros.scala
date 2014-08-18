@@ -130,6 +130,7 @@ trait Ops{
                      with LongInstances
                      with FloatInstances
                      with DoubleInstances
+                     with ArrayInstances
                       
 trait AdditiveSemigroupSyntax {
 

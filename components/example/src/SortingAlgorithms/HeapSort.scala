@@ -4,7 +4,7 @@ import scala.collection.mutable.ArraySeq
 import spire.algebra._
 import spire.math._
 import spire.implicits._
-import Algebra.Korp
+import Xalgebra.Korp
 
 
 object HeapSort {
