@@ -129,6 +129,7 @@ trait Ops{
                      with LongInstances
                      with FloatInstances
                      with DoubleInstances
+                      with ArrayInstances
                       
 trait AdditiveSemigroupSyntax {
   implicit def additiveSemigroupOps[A:AdditiveSemigroup](a:A) = new AdditiveSemigroupOps(a)
