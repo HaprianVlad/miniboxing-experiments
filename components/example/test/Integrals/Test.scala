@@ -2,7 +2,7 @@
 package Integrals
 
 import spire.math.Complex
-import Algebra.Korp
+import Xalgebra.Korp
 
 
 object Test {
